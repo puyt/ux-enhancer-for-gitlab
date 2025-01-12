@@ -196,7 +196,7 @@
         markAsViewed(event);
 
         setTimeout(() => {
-            const nextPageButtonElement = document.querySelector('.diff-files-holder .next-page-item') as HTMLButtonElement;
+            const nextPageButtonElement = document.querySelector('.diff-files-holder .gl-pagination li + li > a') as HTMLAnchorElement;
             nextPageButtonElement?.click();
         }, 300);
     }
