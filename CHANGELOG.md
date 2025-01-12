@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.1.2 - 2025.1 (12/01/2025)
+
+### 🪲 Bug Fixes
+
+- **hotkey**: fix hotkey "mark as viewed & open next file".
+
 ## 4.1.1 - 2024.12 (13/12/2024)
 
 ### 🪲 Bug Fixes
