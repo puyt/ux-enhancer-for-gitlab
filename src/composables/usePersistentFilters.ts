@@ -25,6 +25,7 @@ export function usePersistentFilters() {
         '/-/issues',
         '/-/boards',
         '/-/merge_requests',
+        '/-/pipelines',
     ];
 
     function isValidPath(pathname: string): boolean {
@@ -132,7 +133,7 @@ export function usePersistentFilters() {
 
     function savePersistentFilters() {
         const pathname = getCurrentPathname();
-        if (!pathname || (!document.querySelector('.vue-filtered-search-bar-container') && !document.querySelector('.filtered-search-box'))) {
+        if (!pathname || (!document.querySelector('.vue-filtered-search-bar-container') && !document.querySelector('.filtered-search-box') && !document.querySelector('.gl-filtered-search-scrollable-container-with-search-button'))) {
             return;
         }
 
