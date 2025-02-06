@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.2.0 - 2025.2 (06/02/2025)
+
+### ✨ Features
+
+- add persistent filters to pipelines page. ([#33](https://github.com/puyt/ux-enhancer-for-gitlab/issues/33))
+
 ## 4.1.2 - 2025.1 (12/01/2025)
 
 ### 🪲 Bug Fixes
