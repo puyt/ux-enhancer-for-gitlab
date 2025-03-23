@@ -166,6 +166,7 @@
     setup
 >
     import {
+        mdiAccountCheckOutline,
         mdiAccountCircleOutline,
         mdiChevronDown,
         mdiCogOutline,
@@ -427,6 +428,15 @@
                 title: '',
                 key: Preference.MR_SHOW_MY_UNRESOLVED_THREADS_WITH_RESPONSES,
                 icon: mdiCommentTextMultipleOutline,
+                isGitlabIcon: false,
+                iconClassName: '',
+                defaultValue: true,
+            },
+            {
+                label: 'Show (un)assign yourself button',
+                title: '',
+                key: Preference.MR_SHOW_ASSIGN_YOURSELF,
+                icon: mdiAccountCheckOutline,
                 isGitlabIcon: false,
                 iconClassName: '',
                 defaultValue: true,

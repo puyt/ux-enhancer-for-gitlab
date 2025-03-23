@@ -29,6 +29,8 @@ export const enum Preference {
     ISSUE_REQUIRED_SCOPED_LABELS = 'issue_required_scoped_labels',
 
     MR_HIGHLIGHT_MINE = 'mr_highlight_mine',
+    MR_HIGHLIGHT_MY_APPROVALS = 'mr_highlight_my_approvals',
+    MR_SHOW_ASSIGN_YOURSELF = 'mr_show_assign_yourself',
     MR_SHOW_MY_UNRESOLVED_THREADS = 'mr_show_my_unresolved_threads',
     MR_SHOW_MY_UNRESOLVED_THREADS_WITH_RESPONSES = 'mr_show_my_unresolved_threads_with_responses',
     MR_USE_THREADS_BY_DEFAULT = 'mr_use_threads_by_default',

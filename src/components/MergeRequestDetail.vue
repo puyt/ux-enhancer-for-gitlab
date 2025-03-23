@@ -123,22 +123,26 @@
         mdiCommentAccountOutline,
         mdiCommentTextMultipleOutline,
     } from '@mdi/js';
+    import { useFetch } from '@vueuse/core';
 
     interface Props {
         gitlabUserId: number,
         iid: number,
         currentProjectPath: string,
+        csrfToken: string,
     }
 
     const props = withDefaults(defineProps<Props>(), {
         gitlabUserId: 0,
         iid: 0,
         currentProjectPath: '',
+        csrfToken: '',
     });
     const {
         gitlabUserId,
         iid,
         currentProjectPath,
+        csrfToken,
     } = toRefs(props);
 
     useThreadsByDefault();
@@ -211,6 +215,68 @@
         }
     }
 
+    async function fetchMR() {
+        if (!props.iid) {
+            return;
+        }
+
+        const url = `/api/v4/projects/${encodeURIComponent(props.currentProjectPath)}/merge_requests/${props.iid}?is_custom=1`;
+
+        const { data } = await useFetch(url)
+            .json();
+
+        return data;
+    }
+
+    async function updateReviewers(ids) {
+        if (!props.iid) {
+            return;
+        }
+
+        await useFetch(`/api/v4/projects/${encodeURIComponent(props.currentProjectPath)}/merge_requests/${props.iid}`, {
+            headers: { 'X-CSRF-TOKEN': props.csrfToken },
+        })
+            .put({ reviewer_ids: ids });
+
+        await nextTick();
+        addAssignYourselfButton();
+    }
+
+    async function addAssignYourselfButton() {
+        if (!getSetting(Preference.MR_SHOW_ASSIGN_YOURSELF, true)) {
+            return;
+        }
+
+        const data = await fetchMR();
+        const reviewerIds = data?.value?.reviewers.map((reviewer: any) => reviewer.id) || [];
+
+        const isAssigned = reviewerIds.includes(props.gitlabUserId);
+        const newReviewerIds = isAssigned ? reviewerIds.filter((id: number) => id !== props.gitlabUserId) : [
+            ...reviewerIds,
+            props.gitlabUserId,
+        ];
+
+        const hasExistingButton = document.querySelector('[data-testid="assign-yourself"]');
+        hasExistingButton?.remove();
+
+        const assignYourselfDiv = document.createElement('div');
+        assignYourselfDiv.setAttribute('data-testid', 'assign-yourself');
+        assignYourselfDiv.innerHTML = `<button class="btn gl-ml-2 btn-link btn-md gl-button btn-link-tertiary">
+            <span class="gl-button-text">
+                <span class="gl-text-subtle hover:gl-text-blue-800">
+                    ${isAssigned ? 'unassign' : 'assign'} yourself
+                </span>
+            </span>
+        </button>`;
+
+        assignYourselfDiv.addEventListener('click', () => updateReviewers(newReviewerIds));
+
+        const blockReviewer = document.querySelector('.block.reviewer .reviewers-dropdown');
+        if (blockReviewer && blockReviewer.parentElement) {
+            blockReviewer.parentElement.insertBefore(assignYourselfDiv, blockReviewer);
+        }
+    }
+
     function render() {
         teleportElement.value?.remove();
         teleportElement.value = document.createElement('div');
@@ -239,6 +305,8 @@
         });
 
         nextTick(() => {
+            addAssignYourselfButton();
+
             render();
         });
 

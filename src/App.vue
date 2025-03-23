@@ -23,6 +23,8 @@
 
         <MergeRequestDetail
             v-if="isMergeRequestPage && IID"
+
+            :csrf-token="csrfToken"
             :current-project-path="projectPath"
             :gitlab-user-id="gitlabUserId"
             :iid="IID"
@@ -32,8 +34,8 @@
 
         <ScopedLabelsDropdowns
             v-if="isScopedLabelsDropdownEnabled"
-            :current-project-path="!isGroupPage ? projectPath : ''"
             :csrf-token="csrfToken"
+            :current-project-path="!isGroupPage ? projectPath : ''"
             :iid="IID"
         />
 
