@@ -168,6 +168,7 @@
     import {
         mdiAccountCheckOutline,
         mdiAccountCircleOutline,
+        mdiCheckDecagramOutline,
         mdiChevronDown,
         mdiCogOutline,
         mdiCommentAccountOutline,
@@ -410,6 +411,15 @@
                 title: 'Highlighted with purple dashed border',
                 key: Preference.MR_HIGHLIGHT_MINE,
                 icon: mdiAccountCircleOutline,
+                isGitlabIcon: false,
+                iconClassName: '',
+                defaultValue: true,
+            },
+            {
+                label: 'Highlight my approvals',
+                title: 'Highlighted MRs approved by myself with blue background',
+                key: Preference.MR_HIGHLIGHT_MY_APPROVALS,
+                icon: mdiCheckDecagramOutline,
                 isGitlabIcon: false,
                 iconClassName: '',
                 defaultValue: true,

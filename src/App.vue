@@ -72,6 +72,7 @@
     } from './store';
     import { usePersistentFilters } from './composables/usePersistentFilters';
     import StarIssueBoards from './components/StarIssueBoards.vue';
+    import { useHighlightMyApprovals } from './composables/useHighlightMyApprovals';
 
     const { getSetting } = useExtensionStore();
     usePersistentFilters();
@@ -119,6 +120,8 @@
                 renderProjectAvatars();
                 highlightMyIssuesMrs(gitlabUsername.value);
                 dimDraftMrs();
+
+                useHighlightMyApprovals(gitlabUserId.value);
 
                 isMrIssueOverviewReady.value = !!document.querySelector('ul.issuable-list > li:first-child .issuable-reference');
             }
