@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.3.0 - 2025.3 (23/03/2025)
+
+### ✨ Features
+
+- Add (un)assign button in MR detail.
+- Highlight approved MRs by yourself in MR overview. ([#36](https://github.com/puyt/ux-enhancer-for-gitlab/issues/36))
+
 ## 4.2.0 - 2025.2 (06/02/2025)
 
 ### ✨ Features
