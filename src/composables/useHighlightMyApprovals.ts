@@ -51,7 +51,10 @@ export function useHighlightMyApprovals(gitlabUserId: number) {
             .then(({ data }) => {
                 const isApproved = data.value.rules.some((rule) => rule.approved_by.some((user) => user.id === gitlabUserId));
                 if (isApproved) {
-                    const badge = document.querySelector('[data-testid="mr-appovals"]');
+                    const referenceEl = document.querySelector(`.issuable-list .issuable-main-info a[href="/${projectPath}/-/merge_requests/${iid}"]`);
+                    const liEl = referenceEl?.closest('li');
+                    const badge = liEl?.querySelector(`[data-testid="mr-appovals"]`);
+
                     if (badge && !badge.classList.contains('badge-success')) {
                         badge.classList.add('badge-info');
                     }
