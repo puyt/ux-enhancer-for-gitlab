@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.3.1 - 2025.3.1 (24/03/2025)
+
+### 🪲 Bug Fixes
+
+- Fix highlight the correct badge for approved MRs by yourself in MR overview.  ([#36](https://github.com/puyt/ux-enhancer-for-gitlab/issues/36))
+
 ## 4.3.0 - 2025.3 (23/03/2025)
 
 ### ✨ Features
