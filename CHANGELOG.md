@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.3.3 - 2025.5.1 (18/05/2025)
+
+### 🪲 Bug Fixes
+
+- Fix alignment preferences button with GitLab Duo Chat. ([#37](https://github.com/puyt/ux-enhancer-for-gitlab/issues/37))
+
 ## 4.3.2 - 2025.5 (18/05/2025)
 
 ### 🪲 Bug Fixes
