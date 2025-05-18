@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.3.2 - 2025.5 (18/05/2025)
+
+### 🪲 Bug Fixes
+
+- Fix overlap preferences button with GitLab Duo Chat. ([#37](https://github.com/puyt/ux-enhancer-for-gitlab/issues/37))
+
 ## 4.3.1 - 2025.3.1 (24/03/2025)
 
 ### 🪲 Bug Fixes
