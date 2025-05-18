@@ -514,7 +514,7 @@
 
     const offsetRight = ref(0);
     onMounted(() => {
-        const offsetElements: NodeListOf<HTMLDivElement> = document.querySelectorAll('.top-bar-container > div:nth-child(3) > *');
+        const offsetElements: NodeListOf<HTMLDivElement> = document.querySelectorAll('.top-bar-container > div:last-child > *');
 
         offsetElements.forEach((el) => {
             offsetRight.value += el.offsetWidth;
