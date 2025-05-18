@@ -526,7 +526,7 @@
     #glab-enhancer-browser-extension__preferences {
         position: fixed;
         z-index: 999;
-        top: 6px;
+        top: 7px;
         right: 16px;
 
         .btn-group {
