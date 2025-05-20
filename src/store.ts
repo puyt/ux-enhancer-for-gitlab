@@ -27,6 +27,7 @@ export const enum Preference {
     ISSUE_VALIDATE_MISSING_WEIGHT = 'issue_validate_missing_weight',
     ISSUE_VALIDATE_UNRESOLVED_THREADS = 'issue_validate_unresolved_threads',
     ISSUE_REQUIRED_SCOPED_LABELS = 'issue_required_scoped_labels',
+    ISSUE_BOARDS_RENAME_PROJECT = 'issue_boards_rename_project',
 
     MR_HIGHLIGHT_MINE = 'mr_highlight_mine',
     MR_HIGHLIGHT_MY_APPROVALS = 'mr_highlight_my_approvals',

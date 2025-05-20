@@ -133,6 +133,17 @@
 
                                                     @input="onInput(preference.key, $event)"
                                                 >
+
+                                                <input
+                                                    v-if="typeof preference.defaultValue === 'number'"
+
+                                                    class="form-control gl-border-gray-200"
+                                                    style="margin-left: 24px; margin-bottom: 8px; width: 20%;"
+                                                    type="number"
+                                                    :value="getSetting(preference.key, preference.defaultValue)"
+
+                                                    @input="onInput(preference.key, $event)"
+                                                >
                                             </button>
                                         </li>
                                     </template>
@@ -182,6 +193,7 @@
         mdiMapMarkerOutline,
         mdiScriptTextOutline,
         mdiStarOutline,
+        mdiFormTextbox,
     } from '@mdi/js';
     import { onClickOutside } from '@vueuse/core';
     import showdown from 'showdown'; //eslint-disable-line
@@ -216,7 +228,7 @@
         icon: string;
         isGitlabIcon: boolean;
         iconClassName: string;
-        defaultValue: boolean | string;
+        defaultValue: boolean | string | number;
     }
 
     const {
@@ -403,6 +415,15 @@
                 isGitlabIcon: true,
                 iconClassName: '',
                 defaultValue: '',
+            },
+            {
+                label: 'Display project path in issue cards (board)',
+                title: 'Select how many levels of the project path to display on issue cards',
+                key: Preference.ISSUE_BOARDS_RENAME_PROJECT,
+                icon: mdiFormTextbox,
+                isGitlabIcon: false,
+                iconClassName: '',
+                defaultValue: 0,
             },
         ],
         'Merge Requests': [

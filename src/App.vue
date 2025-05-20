@@ -64,6 +64,7 @@
     import ScopedLabelsDropdowns from './components/ScopedLabelsDropdowns.vue';
     import TodoList from './components/TodoList.vue';
     import { useRenderProjectAvatarIssues } from './composables/useRenderProjectAvatarIssues';
+    import { useRenameProjectInIssueBoards } from './composables/useRenameProjectInIssueBoards';
     import { useHighlightMyIssuesMrs } from './composables/useHighlightMyIssuesMrs';
     import { useDimDraftMrs } from './composables/useDimDraftMrs';
     import {
@@ -77,6 +78,7 @@
     const { getSetting } = useExtensionStore();
     usePersistentFilters();
     const { render: renderProjectAvatars } = useRenderProjectAvatarIssues();
+    const { rename: renameProjectIssueBoards } = useRenameProjectInIssueBoards();
     const { highlight: highlightMyIssuesMrs } = useHighlightMyIssuesMrs();
     const { dim: dimDraftMrs } = useDimDraftMrs();
 
@@ -118,6 +120,7 @@
         window.addEventListener('message', (event) => {
             if (event.data.type === 'browser-request-completed' && !event.data.data.url.includes('is_custom=1')) {
                 renderProjectAvatars();
+                renameProjectIssueBoards();
                 highlightMyIssuesMrs(gitlabUsername.value);
                 dimDraftMrs();
 
