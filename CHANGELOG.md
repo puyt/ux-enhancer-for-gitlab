@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.4.0 - 2025.5.2 (25/05/2025)
+
+### ✨ Features
+
+- Add the ability to show the project path on the issue card in the boards. By @yonatand-rain in [#38](https://github.com/puyt/ux-enhancer-for-gitlab/pull/38)
+
 ## 4.3.3 - 2025.5.1 (18/05/2025)
 
 ### 🪲 Bug Fixes
