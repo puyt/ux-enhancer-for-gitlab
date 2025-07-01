@@ -91,11 +91,11 @@
 
     const location = useBrowserLocation();
 
-    const isGroupPage = computed(() => location.value.pathname?.includes('groups'));
-    const isMergeRequestPage = computed(() => location.value.pathname?.includes('merge_requests'));
-    const isIssuePage = computed(() => location.value.pathname?.includes('issues'));
-    const isIssueBoardPage = computed(() => location.value.pathname?.includes('boards'));
-    const isTodoListPage = computed(() => location.value.pathname?.includes('dashboard/todos'));
+    const isGroupPage = computed(() => !!location.value.pathname?.includes('groups'));
+    const isMergeRequestPage = computed(() => !!location.value.pathname?.includes('merge_requests'));
+    const isIssuePage = computed(() => !!location.value.pathname?.includes('issues'));
+    const isIssueBoardPage = computed(() => !!location.value.pathname?.includes('boards'));
+    const isTodoListPage = computed(() => !!location.value.pathname?.includes('dashboard/todos'));
 
     const projectPath = computed(() => {
         return location.value?.pathname?.split('/-/')?.[0].slice(1) || '';
