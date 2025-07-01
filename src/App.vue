@@ -67,13 +67,11 @@
     import { useRenameProjectInIssueBoards } from './composables/useRenameProjectInIssueBoards';
     import { useHighlightMyIssuesMrs } from './composables/useHighlightMyIssuesMrs';
     import { useDimDraftMrs } from './composables/useDimDraftMrs';
-    import {
-        Preference,
-        useExtensionStore,
-    } from './store';
+    import { useExtensionStore } from './store';
     import { usePersistentFilters } from './composables/usePersistentFilters';
     import StarIssueBoards from './components/StarIssueBoards.vue';
     import { useHighlightMyApprovals } from './composables/useHighlightMyApprovals';
+    import { Preference } from './enums';
 
     const { getSetting } = useExtensionStore();
     usePersistentFilters();

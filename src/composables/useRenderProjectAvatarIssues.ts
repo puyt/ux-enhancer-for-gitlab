@@ -1,11 +1,9 @@
 import { useFetch } from '@vueuse/core';
 import { debounce } from 'lodash-es';
 import { computed } from 'vue';
-import {
-    Preference,
-    useExtensionStore,
-} from '../store';
+import { useExtensionStore } from '../store';
 import { useExtractProjectPaths } from './useExtractProjectPaths';
+import { Preference } from '../enums';
 
 async function fetchProject(path: string | number) {
     const { data } = await useFetch(`/api/v4/projects/${encodeURIComponent(path)}?is_custom=1`)

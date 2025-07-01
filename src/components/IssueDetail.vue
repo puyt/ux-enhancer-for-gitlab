@@ -262,15 +262,13 @@
     } from '../assets/icons';
     import { useFetchPaging } from '../composables/useFetchPaging';
     import { useThreadsByDefault } from '../composables/useThreadsByDefault';
-    import {
-        Preference,
-        useExtensionStore,
-    } from '../store';
+    import { useExtensionStore } from '../store';
     import type {
         GitLabDiscussion,
         GitlabIssue,
     } from '../types';
     import SvgIcon from './SvgIcon.vue';
+    import { Preference } from '../enums';
 
     interface Props {
         gitlabUserId: number,

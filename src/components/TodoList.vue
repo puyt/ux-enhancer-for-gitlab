@@ -37,12 +37,10 @@
         watch,
     } from 'vue';
     import { useFetch } from '@vueuse/core';
-    import {
-        Preference,
-        useExtensionStore,
-    } from '../store';
+    import { useExtensionStore } from '../store';
     import GLabel from './GLabel.vue';
     import { useFetchPaging } from '../composables/useFetchPaging';
+    import { Preference } from '../enums';
 
     const { getSetting } = useExtensionStore();
 

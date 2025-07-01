@@ -34,11 +34,9 @@
         toRefs,
     } from 'vue';
     import StarredProjects from './StarredProjects.vue';
-    import {
-        Preference,
-        useExtensionStore,
-    } from '../store';
+    import { useExtensionStore } from '../store';
     import StarredBoards from './StarredBoards.vue';
+    import { Preference } from '../enums';
 
     interface Props {
         gitlabUserId: number,

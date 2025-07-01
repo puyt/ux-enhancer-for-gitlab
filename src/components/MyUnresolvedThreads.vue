@@ -90,12 +90,10 @@
         mdiCommentAlertOutline,
         mdiCommentTextMultipleOutline,
     } from '@mdi/js';
-    import {
-        Preference,
-        useExtensionStore,
-    } from '../store';
+    import { useExtensionStore } from '../store';
     import SvgIcon from './SvgIcon.vue';
     import { useFetchPaging } from '../composables/useFetchPaging';
+    import { Preference } from '../enums';
 
     type IID = string | Array<string>;
 

@@ -186,6 +186,7 @@
         mdiCommentCheckOutline,
         mdiCommentTextMultipleOutline,
         mdiFlagOutline,
+        mdiFormTextbox,
         mdiGithub,
         mdiImageOutline,
         mdiKeyboardOutline,
@@ -193,7 +194,6 @@
         mdiMapMarkerOutline,
         mdiScriptTextOutline,
         mdiStarOutline,
-        mdiFormTextbox,
     } from '@mdi/js';
     import { onClickOutside } from '@vueuse/core';
     import showdown from 'showdown'; //eslint-disable-line
@@ -204,10 +204,7 @@
     } from 'vue';
     import changelog from '../../CHANGELOG.md?raw'; //eslint-disable-line
     import Version from '../../VERSION?raw'; //eslint-disable-line
-    import {
-        Preference,
-        useExtensionStore,
-    } from '../store';
+    import { useExtensionStore } from '../store';
     import {
         gSvgComments,
         gSvgEpic,
@@ -220,6 +217,7 @@
     import GToggle from './GToggle.vue';
     import SvgIcon from './SvgIcon.vue';
     import SvgLogo from './SvgLogo.vue';
+    import { Preference } from '../enums';
 
     interface PreferenceItem {
         label: string;

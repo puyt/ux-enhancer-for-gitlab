@@ -113,10 +113,7 @@
         gSvgChevronUp,
     } from '../assets/icons';
     import SvgIcon from './SvgIcon.vue';
-    import {
-        Preference,
-        useExtensionStore,
-    } from '../store';
+    import { useExtensionStore } from '../store';
     import { useThreadsByDefault } from '../composables/useThreadsByDefault';
     import { useFetchPaging } from '../composables/useFetchPaging';
     import {
@@ -124,6 +121,7 @@
         mdiCommentTextMultipleOutline,
     } from '@mdi/js';
     import { useFetch } from '@vueuse/core';
+    import { Preference } from '../enums';
 
     interface Props {
         gitlabUserId: number,
