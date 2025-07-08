@@ -29,6 +29,7 @@
 >
     import {
         computed,
+        nextTick,
         onMounted,
         type Ref,
         ref,
@@ -39,10 +40,15 @@
     import { useFetch } from '@vueuse/core';
     import { useExtensionStore } from '../store';
     import GLabel from './GLabel.vue';
-    import { useFetchPaging } from '../composables/useFetchPaging';
     import { Preference } from '../enums';
+    import { useMitt } from '../composables/useMitt';
 
-    const { getSetting } = useExtensionStore();
+    const { on } = useMitt();
+
+    const {
+        getSetting,
+        getProjectLabels,
+    } = useExtensionStore();
 
     const labels = ref(new Map());
     const todoLinks: ShallowRef<Array<string>> = shallowRef([]);
@@ -59,15 +65,19 @@
         return acc;
     }, []));
 
-    function extractIssuableLinks() {
+    function extractIssuableLinksOldUi() {
         const values: Array<string> = [];
+
         document.querySelectorAll('.todo-item a.todo-target-link')
             .forEach((element) => {
                 const href = element.getAttribute('href')
                     ?.substring(1) || '';
-                if (href) {
-                    values.push(href);
+
+                if (!href) {
+                    return;
                 }
+
+                values.push(href);
 
                 const targetElement = element.closest('li.todo')
                     ?.querySelector('div.todo-item');
@@ -83,6 +93,57 @@
             });
 
         todoLinks.value = values;
+    }
+
+    function extractIssuableLinks(itemSelector: string, teleportParentSelector: string, teleportTargetSelector: string) {
+        const itemElements = document.querySelectorAll(itemSelector);
+        if (itemElements.length === 0) {
+            return false;
+        }
+
+        const values: Array<string> = [];
+
+        itemElements.forEach((element) => {
+            let href = element.getAttribute('href')
+                ?.replace(window.location.origin, '') || '';
+
+            if (!href) {
+                return;
+            }
+
+            if (href.startsWith('/')) {
+                href = href.substring(1);
+            }
+
+            values.push(href);
+
+            const targetElement = element.closest(teleportParentSelector)
+                ?.querySelector(teleportTargetSelector);
+
+            if (!targetElement || targetElement.children[targetElement.children.length - 1]?.className === 'todo-item__labels') {
+                return;
+            }
+
+            const teleportItem = document.createElement('div');
+            teleportItem.className = 'todo-item__labels';
+            targetElement.append(teleportItem);
+
+            teleportElements.value[href] = teleportItem;
+        });
+
+        todoLinks.value = values;
+    }
+
+    function intialize() {
+        if (!getSetting(Preference.TODO_RENDER_LABELS, true)) {
+            return;
+        }
+
+        extractIssuableLinksOldUi();
+
+        if (!todoLinks.value.length) {
+            extractIssuableLinks('ol[data-testid="todo-item-list"] li > a.gl-link', 'li', 'a > div');
+        }
     }
 
     function fetchTodoLabels() {
@@ -110,10 +171,10 @@
 
     function fetchProjectLabels() {
         projectPaths.value.forEach((path) => {
-            useFetchPaging(`/api/v4/projects/${encodeURIComponent(path)}/labels`)
-                .then(({ data }) => {
-                    if (Array.isArray(data.value)) {
-                        data.value.forEach((item) => {
+            getProjectLabels(path)
+                .then((data) => {
+                    if (Array.isArray(data)) {
+                        data.forEach((item) => {
                             if (labels.value.has(item.name)) {
                                 return;
                             }
@@ -128,9 +189,13 @@
     watch(projectPaths, fetchProjectLabels);
     watch(todoLinks, fetchTodoLabels);
 
+    on('graphql-request-completed', async () => {
+        await nextTick();
+
+        intialize();
+    });
+
     onMounted(() => {
-        if (getSetting(Preference.TODO_RENDER_LABELS, true)) {
-            extractIssuableLinks();
-        }
+        intialize();
     });
 </script>

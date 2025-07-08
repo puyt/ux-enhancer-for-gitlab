@@ -2,9 +2,14 @@ export function useExtractProjectPaths() {
     function extractViaTodosPage() {
         const paths: string[] = [];
 
-        const aElements = document.querySelectorAll('ul.todos-list a.todo-target-link');
+        let aElements = document.querySelectorAll('ul.todos-list a.todo-target-link');
+        if (aElements.length === 0) {
+            aElements = document.querySelectorAll('ol[data-testid="todo-item-list"] li > a.gl-link');
+        }
+
         aElements.forEach((aElement) => {
-            const parts = (aElement.getAttribute('href') || '').substring(1)
+            const parts = (aElement.getAttribute('href') || '').replace(window.location.origin, '')
+                .substring(1)
                 .split('/-/');
             const projectPath = parts[0] || '';
             if (!projectPath || paths.includes(projectPath)) {

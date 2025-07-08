@@ -124,20 +124,17 @@
     import { Preference } from '../enums';
 
     interface Props {
-        gitlabUserId: number,
         iid: number,
         currentProjectPath: string,
         csrfToken: string,
     }
 
     const props = withDefaults(defineProps<Props>(), {
-        gitlabUserId: 0,
         iid: 0,
         currentProjectPath: '',
         csrfToken: '',
     });
     const {
-        gitlabUserId,
         iid,
         currentProjectPath,
         csrfToken,
@@ -145,7 +142,10 @@
 
     useThreadsByDefault();
 
-    const { getSetting } = useExtensionStore();
+    const {
+        gitlabUserId,
+        getSetting,
+    } = useExtensionStore();
 
     const teleportElement: Ref<HTMLElement | null> = ref(null);
     const discussions: ShallowRef<GitLabDiscussion[]> = shallowRef([]);
@@ -248,10 +248,10 @@
         const data = await fetchMR();
         const reviewerIds = data?.value?.reviewers.map((reviewer: any) => reviewer.id) || [];
 
-        const isAssigned = reviewerIds.includes(props.gitlabUserId);
-        const newReviewerIds = isAssigned ? reviewerIds.filter((id: number) => id !== props.gitlabUserId) : [
+        const isAssigned = reviewerIds.includes(gitlabUserId);
+        const newReviewerIds = isAssigned ? reviewerIds.filter((id: number) => id !== gitlabUserId) : [
             ...reviewerIds,
-            props.gitlabUserId,
+            gitlabUserId,
         ];
 
         const hasExistingButton = document.querySelector('[data-testid="assign-yourself"]');
@@ -323,8 +323,8 @@
             const firstNote = notes?.[0] || null;
             const lastNote = notes?.[notes.length - 1] || null;
 
-            const isMyThread = !!firstNote?.resolvable && !firstNote?.resolved && firstNote?.author?.id === gitlabUserId.value;
-            const hasResponse = lastNote && !lastNote.system && lastNote.author.id !== gitlabUserId.value;
+            const isMyThread = !!firstNote?.resolvable && !firstNote?.resolved && firstNote?.author?.id === gitlabUserId;
+            const hasResponse = lastNote && !lastNote.system && lastNote.author.id !== gitlabUserId;
 
             return isMyThread && hasResponse;
         });
@@ -357,7 +357,7 @@
         return discussions.value.filter((discussion) => {
             const thread = discussion?.notes?.[0] || null;
 
-            return !!thread?.resolvable && !thread?.resolved && thread?.author?.id === gitlabUserId.value;
+            return !!thread?.resolvable && !thread?.resolved && thread?.author?.id === gitlabUserId;
         });
     });
 

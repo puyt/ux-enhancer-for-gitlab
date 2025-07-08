@@ -98,23 +98,23 @@
     type IID = string | Array<string>;
 
     interface Props {
-        gitlabUserId: number,
         currentProjectPath: string,
         isMergeRequest: boolean,
     }
 
     const props = withDefaults(defineProps<Props>(), {
-        gitlabUserId: 0,
         currentProjectPath: '',
         isMergeRequest: true,
     });
     const {
-        gitlabUserId,
         currentProjectPath,
         isMergeRequest,
     } = toRefs(props);
 
-    const { getSetting } = useExtensionStore();
+    const {
+        gitlabUserId,
+        getSetting,
+    } = useExtensionStore();
 
     const extractIssuableIds: ShallowRef<Array<IID>> = shallowRef([]);
     const discussions: Ref<Map<string, GitLabDiscussion[]>> = ref(new Map());
@@ -163,7 +163,7 @@
             const id = getIid(iid);
             const totalUnresolvedThreads = (discussions.value.get(id) || []).filter((discussion) => {
                 const firstNote = discussion?.notes?.[0] || null;
-                return !!firstNote?.resolvable && !firstNote?.resolved && firstNote?.author?.id === gitlabUserId.value;
+                return !!firstNote?.resolvable && !firstNote?.resolved && firstNote?.author?.id === gitlabUserId;
             });
 
             items.set(getTeleportId(iid), totalUnresolvedThreads.length);
@@ -183,8 +183,8 @@
                 const firstNote = notes?.[0] || null;
                 const lastNote = notes?.[notes.length - 1] || null;
 
-                const isMyThread = !!firstNote?.resolvable && !firstNote?.resolved && firstNote?.author?.id === gitlabUserId.value;
-                const hasResponse = lastNote && !lastNote.system && lastNote.author.id !== gitlabUserId.value;
+                const isMyThread = !!firstNote?.resolvable && !firstNote?.resolved && firstNote?.author?.id === gitlabUserId;
+                const hasResponse = lastNote && !lastNote.system && lastNote.author.id !== gitlabUserId;
 
                 return isMyThread && hasResponse;
             });

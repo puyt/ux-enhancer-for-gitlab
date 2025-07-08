@@ -29,27 +29,45 @@ export function useRenderProjectAvatarIssues() {
         }
 
         if (isInjectAvatarTodoEnabled.value && window.location.href.includes('todos')) {
-            const targetElements = document.querySelectorAll(`ul.todos-list a.todo-target-link[href*="${projectPath}"]`);
+            let targetElements = document.querySelectorAll(`ul.todos-list a.todo-target-link[href*="${projectPath}"]`);
+            if (targetElements.length === 0) {
+                targetElements = document.querySelectorAll(`ol[data-testid="todo-item-list"] li > a.gl-link[href*="${projectPath}"]`);
+            }
+
             targetElements.forEach((targetElement) => {
                 const parentElement = (targetElement.closest('li')?.children?.[0] || null) as HTMLElement | null;
-                if (parentElement && !parentElement.children?.[0].classList.contains('glab-enhancer-browser-extension__project-avatar')) {
-                    let injectElement: HTMLElement;
-                    if (!avatarUrl.includes('http')) {
-                        injectElement = document.createElement('div');
-                        injectElement.className = 'gl-avatar gl-avatar-identicon gl-avatar-s24 gl-avatar-identicon-bg6';
-                        injectElement.textContent = avatarUrl;
-                    } else {
-                        injectElement = document.createElement('img');
-                        injectElement.setAttribute('src', avatarUrl);
-                        injectElement.setAttribute('style', 'width: 24px;');
-                    }
-
-                    injectElement.classList.add('gl-mr-4', 'glab-enhancer-browser-extension__project-avatar');
-                    injectElement.style.alignItems = 'center';
-
-                    parentElement.prepend(injectElement);
-                    parentElement.style.alignItems = 'center';
+                if (!parentElement) {
+                    return;
                 }
+
+                const avatarElement = parentElement.querySelector('img.glab-enhancer-browser-extension__project-avatar');
+                if (avatarElement) {
+                    return;
+                }
+
+                let injectElement: HTMLElement;
+                if (!avatarUrl.includes('http')) {
+                    injectElement = document.createElement('div');
+                    injectElement.className = 'gl-avatar gl-avatar-identicon gl-avatar-s24 gl-avatar-identicon-bg6';
+                    injectElement.textContent = avatarUrl;
+                } else {
+                    injectElement = document.createElement('img');
+                    injectElement.setAttribute('src', avatarUrl);
+                    injectElement.setAttribute('style', 'width: 24px;');
+                }
+
+                injectElement.classList.add('gl-mr-4', 'glab-enhancer-browser-extension__project-avatar');
+                injectElement.style.alignItems = 'center';
+
+                if (parentElement.children?.[0]?.getAttribute('type') === 'checkbox') {
+                    injectElement.classList.add('gl-ml-4');
+                    parentElement.append(injectElement);
+                } else {
+                    parentElement.prepend(injectElement);
+                }
+
+                parentElement.style.display = 'flex';
+                parentElement.style.alignItems = 'center';
             });
         }
 

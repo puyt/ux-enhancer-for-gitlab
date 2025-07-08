@@ -67,4 +67,5 @@ function onWebRequestCompleted(details) {
             });
         });
 }
+
 chrome?.webRequest?.onCompleted?.addListener(onWebRequestCompleted, { urls: ['<all_urls>'] });

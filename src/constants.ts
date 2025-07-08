@@ -1,0 +1,1 @@
+export const APP_NAMESPACE = 'glab-enhancer-browser-extension';

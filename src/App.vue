@@ -2,22 +2,17 @@
     <div v-if="isReady">
         <Preferences />
 
-        <CommandPanelEnhancer
-            v-if="gitlabUserId"
-            :gitlab-user-id="gitlabUserId"
-        />
+        <CommandPanelEnhancer />
 
         <IssueDetail
             v-if="isIssuePage && IID"
             :current-project-path="projectPath"
-            :gitlab-user-id="gitlabUserId"
             :iid="IID"
         />
 
         <MyUnresolvedThreads
             v-if="isMrIssueOverviewReady && !IID"
             :current-project-path="projectPath"
-            :gitlab-user-id="gitlabUserId"
             :is-merge-request="isMergeRequestPage"
         />
 
@@ -26,7 +21,6 @@
 
             :csrf-token="csrfToken"
             :current-project-path="projectPath"
-            :gitlab-user-id="gitlabUserId"
             :iid="IID"
         />
 
@@ -47,10 +41,7 @@
     lang="ts"
     setup
 >
-    import {
-        useBrowserLocation,
-        useFetch,
-    } from '@vueuse/core';
+    import { useBrowserLocation } from '@vueuse/core';
     import {
         computed,
         onMounted,
@@ -72,8 +63,19 @@
     import StarIssueBoards from './components/StarIssueBoards.vue';
     import { useHighlightMyApprovals } from './composables/useHighlightMyApprovals';
     import { Preference } from './enums';
+    import { useMitt } from './composables/useMitt';
+    import { storeToRefs } from 'pinia';
+
+    const { emit } = useMitt();
+
+    const {
+        gitlabUserId,
+        gitlabUsername,
+        isReady,
+    } = storeToRefs(useExtensionStore());
 
     const { getSetting } = useExtensionStore();
+
     usePersistentFilters();
     const { render: renderProjectAvatars } = useRenderProjectAvatarIssues();
     const { rename: renameProjectIssueBoards } = useRenameProjectInIssueBoards();
@@ -81,11 +83,7 @@
     const { dim: dimDraftMrs } = useDimDraftMrs();
 
     const csrfToken = ref('');
-    const gitlabUserId = ref(0);
-    const gitlabUsername = ref('');
     const isMrIssueOverviewReady = ref(false);
-
-    const isReady = computed(() => !!gitlabUserId.value);
 
     const location = useBrowserLocation();
 
@@ -111,12 +109,16 @@
     const isScopedLabelsDropdownEnabled = computed(() => getSetting(Preference.GENERAL_SCOPED_LABELS_DROPDOWN, true) && csrfToken && (isIssueBoardPage.value || (IID.value && (isMergeRequestPage.value || isIssuePage.value))));
     const isStarIssueBoardsEnabled = computed(() => getSetting(Preference.ISSUE_STAR_BOARDS, true) && isIssueBoardPage.value);
 
-    onMounted(() => {
+    onMounted(async () => {
         const csrfTokenMetaTag = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement;
         csrfToken.value = csrfTokenMetaTag.content || '';
 
         window.addEventListener('message', (event) => {
             if (event.data.type === 'browser-request-completed' && !event.data.data.url.includes('is_custom=1')) {
+                if (event.data.data.url.includes('/api/graphql')) {
+                    emit('graphql-request-completed', event.data.data);
+                }
+
                 renderProjectAvatars();
                 renameProjectIssueBoards();
                 highlightMyIssuesMrs(gitlabUsername.value);
@@ -127,12 +129,5 @@
                 isMrIssueOverviewReady.value = !!document.querySelector('ul.issuable-list > li:first-child .issuable-reference');
             }
         });
-
-        useFetch(`/api/v4/user`)
-            .json()
-            .then(({ data }) => {
-                gitlabUserId.value = data?.value?.id || 0;
-                gitlabUsername.value = data?.value?.username || '';
-            });
     });
 </script>

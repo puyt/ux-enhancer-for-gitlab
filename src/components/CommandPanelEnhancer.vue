@@ -31,25 +31,14 @@
         onMounted,
         type Ref,
         ref,
-        toRefs,
     } from 'vue';
     import StarredProjects from './StarredProjects.vue';
     import { useExtensionStore } from '../store';
     import StarredBoards from './StarredBoards.vue';
     import { Preference } from '../enums';
 
-    interface Props {
-        gitlabUserId: number,
-    }
-
-    const props = withDefaults(defineProps<Props>(), {
-        gitlabUserId: 0,
-    });
     const {
         gitlabUserId,
-    } = toRefs(props);
-
-    const {
         getSetting,
     } = useExtensionStore();
 
