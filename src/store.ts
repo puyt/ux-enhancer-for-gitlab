@@ -8,7 +8,9 @@ import {
 import { useLocalStorage } from '@vueuse/core';
 import { APP_NAMESPACE } from './constants';
 import {
+    fetchProject,
     fetchProjectLabels,
+    type IProject,
     type IProjectLabel,
 } from './apis/project';
 import { fetchGitLabVersion } from './apis/version';
@@ -36,7 +38,7 @@ export const useExtensionStore = defineStore('resize', () => {
 
         // --- GitLab State Cache ---
 
-        const projectLabelsCache: Ref<Map<string, IProjectLabel[]>> = ref(new Map());
+        const projectLabelsCache: Ref<Map<string, IProjectLabel[]>> = useLocalStorage(`${APP_NAMESPACE}/project-labels`, ref(new Map()));
 
         async function getProjectLabels(projectPath: string) {
             if (projectLabelsCache.value.has(projectPath)) {
@@ -50,12 +52,26 @@ export const useExtensionStore = defineStore('resize', () => {
             return data.value;
         }
 
-        function clearProjectLabelsCache(projectPath?: string) {
-            if (projectPath) {
-                projectLabelsCache.value.delete(projectPath);
-            } else {
-                projectLabelsCache.value.clear();
+        const projectsCache: Ref<Map<string, IProject>> = useLocalStorage(`${APP_NAMESPACE}/projects`, ref(new Map()));
+
+        async function getProject(projectPath: string) {
+            if (projectsCache.value.has(projectPath)) {
+                return projectsCache.value.get(projectPath)!;
             }
+
+            const { data } = await fetchProject(projectPath);
+
+            if (!data.value) {
+                return null;
+            }
+
+            projectsCache.value.set(projectPath, data.value);
+
+            return data.value;
+        }
+
+        function clearCache() {
+            projectLabelsCache.value.clear();
         }
 
         async function loadCurrentUser() {
@@ -85,7 +101,8 @@ export const useExtensionStore = defineStore('resize', () => {
             setSetting: set,
 
             getProjectLabels,
-            clearProjectLabelsCache,
+            getProject,
+            clearCache,
         };
     },
 );

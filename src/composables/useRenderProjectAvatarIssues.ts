@@ -1,19 +1,15 @@
-import { useFetch } from '@vueuse/core';
 import { debounce } from 'lodash-es';
 import { computed } from 'vue';
 import { useExtensionStore } from '../store';
 import { useExtractProjectPaths } from './useExtractProjectPaths';
 import { Preference } from '../enums';
 
-async function fetchProject(path: string | number) {
-    const { data } = await useFetch(`/api/v4/projects/${encodeURIComponent(path)}?is_custom=1`)
-        .json();
-
-    return data?.value || null;
-}
-
 export function useRenderProjectAvatarIssues() {
-    const { getSetting } = useExtensionStore();
+    const {
+        getSetting,
+        getProject,
+    } = useExtensionStore();
+
     const { extract: extractProjectPaths } = useExtractProjectPaths();
 
     const projectAvatars = {};
@@ -142,17 +138,14 @@ export function useRenderProjectAvatarIssues() {
 
     function injectAvatars() {
         const paths = extractProjectPaths();
-        paths.forEach((path) => {
-            if (!projectAvatars[path]) {
-                fetchProject(path)
-                    .then((data) => {
-                        projectAvatars[path] = data?.avatar_url || data?.name?.charAt(0) || null;
 
-                        injectAvatar(path);
-                    });
-            } else {
-                injectAvatar(path);
-            }
+        paths.forEach((path) => {
+            getProject(path)
+                .then((project) => {
+                    projectAvatars[path] = project?.avatar_url || project?.name?.charAt(0) || null;
+
+                    injectAvatar(path);
+                });
         });
     }
 
