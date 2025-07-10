@@ -40,6 +40,50 @@ export const useExtensionStore = defineStore('resize', () => {
 
         const projectLabelsCache: Ref<Map<string, IProjectLabel[]>> = useLocalStorage(`${APP_NAMESPACE}/project-labels`, ref(new Map()));
 
+        const projectScopedLabelsByPrefixCache = computed(() => {
+            const scopedGroupsMap = new Map<string, IProjectLabel[]>();
+
+            const projectLabels = Array.from(projectLabelsCache.value.entries());
+            if (projectLabels.length === 0) {
+                return scopedGroupsMap;
+            }
+
+            projectLabels.forEach(([projectPath, labels]) => {
+                const scopedLabels = labels.filter(label => label.name.includes('::'));
+
+                scopedLabels.forEach((scopedLabel) => {
+                    const prefix = scopedLabel.name.split('::')[0];
+                    const mapKey = `${projectPath}__${prefix}`;
+
+                    const values = scopedGroupsMap.get(mapKey) || [];
+                    values.push(scopedLabel);
+
+                    scopedGroupsMap.set(mapKey, values);
+                });
+            });
+
+            return scopedGroupsMap;
+        });
+
+        const projectLabelsCacheByKey = computed(() => {
+            const labelsMap = new Map<string, IProjectLabel>();
+
+            const projectLabels = Array.from(projectLabelsCache.value.entries());
+            if (projectLabels.length === 0) {
+                return labelsMap;
+            }
+
+            projectLabels.forEach(([projectPath, labels]) => {
+                labels.forEach((scopedLabel) => {
+                    const mapKey = `${projectPath}__${scopedLabel.name}`;
+
+                    labelsMap.set(mapKey, scopedLabel);
+                });
+            });
+
+            return labelsMap;
+        });
+
         async function getProjectLabels(projectPath: string) {
             if (projectLabelsCache.value.has(projectPath)) {
                 return projectLabelsCache.value.get(projectPath)!;
@@ -47,10 +91,21 @@ export const useExtensionStore = defineStore('resize', () => {
 
             const { data } = await fetchProjectLabels(projectPath);
 
-            projectLabelsCache.value.set(projectPath, data.value ?? []);
+            const labels = data.value || [];
 
-            return data.value;
+            projectLabelsCache.value.set(projectPath, labels);
+
+            return labels;
         }
+
+        function getProjectScopedLabels(projectPath: string, prefix: string) {
+            return projectScopedLabelsByPrefixCache.value.get(`${projectPath}__${prefix}`) || [];
+        }
+
+        function getProjectLabel(projectPath: string, label: string) {
+            return projectLabelsCacheByKey.value.get(`${projectPath}__${label}`) || null;
+        }
+
 
         const projectsCache: Ref<Map<string, IProject>> = useLocalStorage(`${APP_NAMESPACE}/projects`, ref(new Map()));
 
@@ -101,7 +156,13 @@ export const useExtensionStore = defineStore('resize', () => {
             setSetting: set,
 
             getProjectLabels,
+            getProjectScopedLabels,
+            getProjectLabel,
+            projectScopedLabelsByPrefixCache,
+            projectLabelsCache,
+
             getProject,
+
             clearCache,
         };
     },
