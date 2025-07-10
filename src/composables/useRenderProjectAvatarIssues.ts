@@ -1,8 +1,8 @@
 import { debounce } from 'lodash-es';
 import { computed } from 'vue';
+import { Preference } from '../enums';
 import { useExtensionStore } from '../store';
 import { useExtractProjectPaths } from './useExtractProjectPaths';
-import { Preference } from '../enums';
 
 export function useRenderProjectAvatarIssues() {
     const {
@@ -110,7 +110,8 @@ export function useRenderProjectAvatarIssues() {
         }
 
         if (isInjectAvatarMergeRequestEnabled.value && (window.location.href.includes('merge_requests') && (window.location.href.includes('groups') || window.location.href.includes('dashboard')))) {
-            const targetElements = document.querySelectorAll(`.issuable-list .merge-request-title-text a[href*="${projectPath}"]`);
+            const targetElements = document.querySelectorAll(`.issuable-list .merge-request-title-text a[href*="${projectPath}"], .issuable-list .issue-title a[href*="${projectPath}"]`);
+
             targetElements.forEach((targetElement) => {
                 const parentElement = targetElement?.closest('li') || null;
 

@@ -58,7 +58,7 @@ export function useExtractProjectPaths() {
     function extractViaMergeRequestsPage() {
         const paths: string[] = [];
 
-        const aElements = document.querySelectorAll('.issuable-list .merge-request-title a');
+        const aElements = document.querySelectorAll('.issuable-list .merge-request-title a, .issuable-list .issue-title a');
         aElements.forEach((aElement) => {
             const parts = (aElement.getAttribute('href') || '').split('/-/');
             const projectPath = parts[0]?.substring(1) || '';
