@@ -27,10 +27,12 @@
     lang="ts"
     setup
 >
+    import { useFetch } from '@vueuse/core';
     import { uniq } from 'lodash-es';
     import {
         computed,
         nextTick,
+        onBeforeUnmount,
         onMounted,
         type Ref,
         ref,
@@ -38,13 +40,18 @@
         shallowRef,
         watch,
     } from 'vue';
-    import { useFetch } from '@vueuse/core';
-    import { useExtensionStore } from '../store';
-    import { Preference } from '../enums';
     import { useMitt } from '../composables/useMitt';
+    import {
+        MittEventKey,
+        Preference,
+    } from '../enums';
+    import { useExtensionStore } from '../store';
     import GLabel from './GLabel.vue';
 
-    const { on } = useMitt();
+    const {
+        on,
+        off,
+    } = useMitt();
 
     const {
         getSetting,
@@ -145,10 +152,12 @@
         todoLinks.value = values;
     }
 
-    function intialize() {
+    async function initialize() {
         if (!getSetting(Preference.TODO_RENDER_LABELS, true)) {
             return;
         }
+
+        await nextTick();
 
         extractIssuableLinksOldUi();
 
@@ -188,13 +197,13 @@
     watch(projectPaths, fetchProjectLabels);
     watch(todoLinks, fetchTodoLabels);
 
-    on('graphql-request-completed', async () => {
-        await nextTick();
+    onMounted(() => {
+        initialize();
 
-        intialize();
+        on(MittEventKey.GRAPHQL_REQUEST_COMPLETED, initialize);
     });
 
-    onMounted(() => {
-        intialize();
+    onBeforeUnmount(() => {
+        off(MittEventKey.GRAPHQL_REQUEST_COMPLETED, initialize);
     });
 </script>

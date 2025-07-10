@@ -42,6 +42,7 @@
     setup
 >
     import { useBrowserLocation } from '@vueuse/core';
+    import { storeToRefs } from 'pinia';
     import {
         computed,
         onMounted,
@@ -49,22 +50,25 @@
     } from 'vue';
     import CommandPanelEnhancer from './components/CommandPanelEnhancer.vue';
     import IssueDetail from './components/IssueDetail.vue';
-    import MyUnresolvedThreads from './components/MyUnresolvedThreads.vue';
     import MergeRequestDetail from './components/MergeRequestDetail.vue';
+    import MyUnresolvedThreads from './components/MyUnresolvedThreads.vue';
     import Preferences from './components/Preferences.vue';
     import ScopedLabelsDropdowns from './components/ScopedLabelsDropdowns.vue';
-    import TodoList from './components/TodoList.vue';
-    import { useRenderProjectAvatarIssues } from './composables/useRenderProjectAvatarIssues';
-    import { useRenameProjectInIssueBoards } from './composables/useRenameProjectInIssueBoards';
-    import { useHighlightMyIssuesMrs } from './composables/useHighlightMyIssuesMrs';
-    import { useDimDraftMrs } from './composables/useDimDraftMrs';
-    import { useExtensionStore } from './store';
-    import { usePersistentFilters } from './composables/usePersistentFilters';
     import StarIssueBoards from './components/StarIssueBoards.vue';
+    import TodoList from './components/TodoList.vue';
+    import { useDimDraftMrs } from './composables/useDimDraftMrs';
     import { useHighlightMyApprovals } from './composables/useHighlightMyApprovals';
-    import { Preference } from './enums';
+    import { useHighlightMyIssuesMrs } from './composables/useHighlightMyIssuesMrs';
     import { useMitt } from './composables/useMitt';
-    import { storeToRefs } from 'pinia';
+    import { usePersistentFilters } from './composables/usePersistentFilters';
+    import { useRenameProjectInIssueBoards } from './composables/useRenameProjectInIssueBoards';
+    import { useRenderProjectAvatarIssues } from './composables/useRenderProjectAvatarIssues';
+    import {
+        BrowserMessageType,
+        MittEventKey,
+        Preference,
+    } from './enums';
+    import { useExtensionStore } from './store';
 
     const { emit } = useMitt();
 
@@ -114,10 +118,12 @@
         csrfToken.value = csrfTokenMetaTag.content || '';
 
         window.addEventListener('message', (event) => {
-            if (event.data.type === 'browser-request-completed' && !event.data.data.url.includes('is_custom=1')) {
+            if (event.data.type === BrowserMessageType.BROWSER_REQUEST_COMPLETED && !event.data.data.url.includes('is_custom=1')) {
                 if (event.data.data.url.includes('/api/graphql')) {
-                    emit('graphql-request-completed', event.data.data);
+                    emit(MittEventKey.GRAPHQL_REQUEST_COMPLETED, event.data.data);
                 }
+
+                emit(MittEventKey.BROWSER_REQUEST_COMPLETED, event.data.data);
 
                 renderProjectAvatars();
                 renameProjectIssueBoards();

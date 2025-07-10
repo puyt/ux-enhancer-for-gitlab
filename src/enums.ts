@@ -33,3 +33,12 @@ export const enum Preference {
     MR_HOTKEY_VIEWED = 'mr_hotkey_viewed',
     MR_HOTKEY_VIEWED_NEXT = 'mr_hotkey_viewed_next',
 }
+
+export const enum BrowserMessageType {
+    BROWSER_REQUEST_COMPLETED = 'browser-request-completed',
+}
+
+export const enum MittEventKey {
+    GRAPHQL_REQUEST_COMPLETED = 'graphql-request-completed',
+    BROWSER_REQUEST_COMPLETED = 'browser-request-completed',
+}
