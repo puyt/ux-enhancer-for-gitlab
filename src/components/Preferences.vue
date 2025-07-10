@@ -152,6 +152,19 @@
                         </div>
 
                         <footer>
+                            <button
+                                class="btn btn-small has-tooltip"
+                                title="Project avatars & labels are stored in local storage to reduce API calls. This button clears that cache."
+                                @click="clearCache()"
+                            >
+                                <SvgIcon
+                                    :path="mdiDeleteOutline"
+                                    style="margin-right: 4px;"
+                                />
+
+                                <span>Clear cache</span>
+                            </button>
+
                             <a
                                 href="https://github.com/puyt/ux-enhancer-for-gitlab"
                                 style="color: var(--gray-dark);"
@@ -185,6 +198,7 @@
         mdiCommentAccountOutline,
         mdiCommentCheckOutline,
         mdiCommentTextMultipleOutline,
+        mdiDeleteOutline,
         mdiFlagOutline,
         mdiFormTextbox,
         mdiGithub,
@@ -204,7 +218,6 @@
     } from 'vue';
     import changelog from '../../CHANGELOG.md?raw'; //eslint-disable-line
     import Version from '../../VERSION?raw'; //eslint-disable-line
-    import { useExtensionStore } from '../store';
     import {
         gSvgComments,
         gSvgEpic,
@@ -214,10 +227,11 @@
         gSvgStar,
         gSvgWeight,
     } from '../assets/icons';
+    import { Preference } from '../enums';
+    import { useExtensionStore } from '../store';
     import GToggle from './GToggle.vue';
     import SvgIcon from './SvgIcon.vue';
     import SvgLogo from './SvgLogo.vue';
-    import { Preference } from '../enums';
 
     interface PreferenceItem {
         label: string;
@@ -232,6 +246,7 @@
     const {
         getSetting,
         setSetting,
+        clearCache,
     } = useExtensionStore();
 
     const rootPreferencesElement: Ref<HTMLElement | null> = ref(null);
@@ -576,8 +591,16 @@
 
         footer {
             display: flex;
-            justify-content: end;
-            padding: 8px 16px 0 0;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 8px 16px 0 16px;
+
+            border-top: 1px solid var(--gray-100);
+
+            button {
+                padding: 3px 5px;
+            }
         }
     }
 

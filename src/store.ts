@@ -1,3 +1,4 @@
+import { useLocalStorage } from '@vueuse/core';
 import { defineStore } from 'pinia';
 import {
     computed,
@@ -5,16 +6,15 @@ import {
     type Ref,
     ref,
 } from 'vue';
-import { useLocalStorage } from '@vueuse/core';
-import { APP_NAMESPACE } from './constants';
 import {
     fetchProject,
     fetchProjectLabels,
     type IProject,
     type IProjectLabel,
 } from './apis/project';
-import { fetchGitLabVersion } from './apis/version';
 import { fetchCurrentUser } from './apis/user';
+import { fetchGitLabVersion } from './apis/version';
+import { APP_NAMESPACE } from './constants';
 
 type SettingValue = boolean | string | number | null;
 
@@ -127,6 +127,7 @@ export const useExtensionStore = defineStore('resize', () => {
 
         function clearCache() {
             projectLabelsCache.value.clear();
+            projectsCache.value.clear();
         }
 
         async function loadCurrentUser() {
