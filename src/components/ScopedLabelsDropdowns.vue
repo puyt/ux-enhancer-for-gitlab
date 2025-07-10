@@ -26,7 +26,7 @@
                     <div class="gl-dropdown-inner">
                         <div class="gl-dropdown-contents">
                             <template
-                                v-for="label in groupedScopedLabels[scope]"
+                                v-for="label in getProjectScopedLabels(selectedProjectPath, scope)"
                                 :key="label.name"
                             >
                                 <li
@@ -57,6 +57,7 @@
 >
     import { mdiChevronDown } from '@mdi/js';
     import { useFetch } from '@vueuse/core';
+    import { debounce } from 'lodash-es';
     import {
         computed,
         onBeforeUnmount,
@@ -64,18 +65,12 @@
         type Ref,
         ref,
     } from 'vue';
+    import { useExtractProjectPaths } from '../composables/useExtractProjectPaths';
+    import { useMitt } from '../composables/useMitt';
+    import { MittEventKey } from '../enums';
+    import { useExtensionStore } from '../store';
     import GLabel from './GLabel.vue';
     import SvgIcon from './SvgIcon.vue';
-    import { debounce } from 'lodash-es';
-    import { useExtractProjectPaths } from '../composables/useExtractProjectPaths';
-    import { useFetchPaging } from '../composables/useFetchPaging';
-
-    interface GitLabLabel {
-        id: number,
-        name: string,
-        color: string,
-        text_color: string,
-    }
 
     interface Props {
         currentProjectPath: string,
@@ -85,9 +80,18 @@
 
     const props = defineProps<Props>();
 
+    const {
+        getProjectLabels,
+        getProjectScopedLabels,
+    } = useExtensionStore();
+
     const { extract: extractProjectPaths } = useExtractProjectPaths();
 
-    const scopedLabels = ref({});
+    const {
+        on,
+        off,
+    } = useMitt();
+
     const teleportElements: Ref<Record<string, HTMLElement>> = ref({});
     const selectedScope = ref('');
     const offsetLeft = ref('0');
@@ -99,7 +103,8 @@
         }
 
         if (isIssueBoard.value) {
-            return parseInt(document.querySelector('li.board-card.is-active')?.getAttribute('data-item-iid') || '0');
+            return parseInt(document.querySelector('li.board-card.is-active')
+                ?.getAttribute('data-item-iid') || '0');
         }
 
         return 0;
@@ -111,26 +116,12 @@
         }
 
         if (isIssueBoard.value) {
-            return document.querySelector('li.board-card.is-active')?.getAttribute('data-item-path')?.split('#')?.[0] || '';
+            return document.querySelector('li.board-card.is-active')
+                ?.getAttribute('data-item-path')
+                ?.split('#')?.[0] || '';
         }
 
         return '';
-    });
-
-    const groupedScopedLabels = computed(() => {
-        return Object.keys(scopedLabels.value)
-            .reduce((acc: Record<string, Array<GitLabLabel>>, key: string) => {
-                const scope = key.split('::')?.[0] || '';
-                if (scope) {
-                    if (!acc[scope]) {
-                        acc[scope] = [];
-                    }
-
-                    acc[scope].push(scopedLabels.value[key]);
-                }
-
-                return acc;
-            }, {});
     });
 
     function updateIssueLabel(label: string) {
@@ -141,7 +132,11 @@
         useFetch(`/api/v4/projects/${encodeURIComponent(selectedProjectPath.value)}/issues/${iid.value}`, {
             headers: { 'X-CSRF-TOKEN': props.csrfToken },
         })
-            .put({ add_labels: [label] });
+            .put({ add_labels: [label] })
+            .then(async () => {
+                const scopePrefix = label.split('::')[0];
+                delete teleportElements.value[scopePrefix];
+            });
     }
 
     function onClickLabelHandler(event: Event) {
@@ -149,14 +144,15 @@
         event.preventDefault();
         const target = event.target as HTMLElement;
 
-        document.querySelectorAll('div.labels-select-wrapper span.gl-label')
+        document.querySelectorAll('div.labels-select-wrapper span.gl-label, section.js-labels.work-item-attributes-item span.gl-label')
             .forEach((element) => {
                 const spanElement = element as HTMLSpanElement;
                 spanElement.style.zIndex = 'initial';
             });
 
         const parentElement = target?.parentElement?.parentElement as HTMLSpanElement || null;
-        const scope = parentElement?.getAttribute('data-qa-label-name')
+
+        const scope = (parentElement?.getAttribute('data-qa-label-name') || parentElement?.getAttribute('data-testid'))
             ?.split('::')?.[0] || '';
 
         if (parentElement) {
@@ -167,9 +163,7 @@
     }
 
     async function onClickDocumentHandler() {
-        if (!Object.keys(scopedLabels.value).length) {
-            await fetchMultipleProjectLabels();
-        }
+        await fetchMultipleProjectLabels();
 
         setTimeout(() => {
             if (document.querySelector('#js-right-sidebar-portal .gl-drawer-header')) {
@@ -179,50 +173,42 @@
     }
 
     function injectTeleports() {
-        if (!iid.value || !document.querySelector('div.labels-select-wrapper .shortcut-sidebar-dropdown-toggle')) {
+        if (!iid.value || !document.querySelector('div.labels-select-wrapper .shortcut-sidebar-dropdown-toggle, section.js-labels.work-item-attributes-item .shortcut-sidebar-dropdown-toggle')) {
             return;
         }
 
-        const labelsWrapperElement = document.querySelector('div.labels-select-wrapper');
+        const labelsWrapperElement = document.querySelector('div.labels-select-wrapper, section.js-labels.work-item-attributes-item');
         if (!labelsWrapperElement) {
             return;
         }
 
-        Object.keys(groupedScopedLabels.value)
-            .forEach((scope) => {
-                const labelElement = labelsWrapperElement.querySelector(`span.gl-label[data-qa-label-name^="${scope}::"]`);
-                if (!labelElement) {
-                    return;
-                }
+        const labelElements = labelsWrapperElement.querySelectorAll(`span.gl-label[data-qa-label-name*="::"], span.gl-label-scoped[data-testid*="::"]`);
 
-                labelElement.classList.add('gl-overflow-visible');
+        labelElements.forEach((element) => {
+            const scopePrefix = element.getAttribute('data-qa-label-name')
+                ?.split('::')[0] || element.getAttribute('data-testid')
+                ?.split('::')[0];
 
-                const scopeSpanElement = labelElement.querySelector('span.gl-label-text');
-                scopeSpanElement?.setAttribute('style', 'border-radius: 16px 0 0 16px;');
+            if (!scopePrefix) {
+                return;
+            }
 
-                const teleportElement = labelElement.querySelector('span.gl-label-text-scoped');
-                if (teleportElement) {
-                    teleportElements.value[scope] = teleportElement as HTMLElement;
-                    teleportElement.addEventListener('click', onClickLabelHandler);
-                }
-            });
-    }
+            element.classList.add('gl-overflow-visible');
 
-    async function fetchProjectLabels(projectPath: string) {
-        const { data } = await useFetchPaging(`/api/v4/projects/${encodeURIComponent(projectPath)}/labels`);
+            const scopeSpanElement = element.querySelector('span.gl-label-text');
+            scopeSpanElement?.setAttribute('style', 'border-radius: 16px 0 0 16px;');
 
-        if (Array.isArray(data.value)) {
-            data.value.forEach((item: GitLabLabel) => {
-                if (item.name.includes('::') && !scopedLabels.value[item.name]) {
-                    scopedLabels.value[item.name] = item;
-                }
-            });
-        }
+            const teleportElement = element.querySelector('span.gl-label-text-scoped');
+            if (teleportElement && !teleportElements.value[scopePrefix]) {
+                teleportElements.value[scopePrefix] = teleportElement as HTMLElement;
+                teleportElement.addEventListener('click', onClickLabelHandler);
+            }
+        });
     }
 
     async function fetchMultipleProjectLabels() {
         const paths = extractProjectPaths();
-        const promises = paths.map((path) => fetchProjectLabels(path));
+        const promises = paths.map((path) => getProjectLabels(path));
 
         await Promise.all(promises);
     }
@@ -234,21 +220,19 @@
                 fetchMultipleProjectLabels();
             }, 600);
         } else {
-            await fetchProjectLabels?.(props.currentProjectPath);
+            await getProjectLabels(props.currentProjectPath);
         }
 
         if (window.location.href.includes('/-/boards')) {
             document.body.addEventListener('mouseup', onClickDocumentHandler);
         } else {
-            window.addEventListener('message', (event) => {
-                if (event.data.type === 'browser-request-completed' && !event.data.data.url.includes('is_custom=1')) {
-                    deboundedInjectTeleports();
-                }
-            });
+            on(MittEventKey.BROWSER_REQUEST_COMPLETED, deboundedInjectTeleports);
         }
     });
 
     onBeforeUnmount(() => {
+        off(MittEventKey.BROWSER_REQUEST_COMPLETED, deboundedInjectTeleports);
+
         document.body.removeEventListener('mouseup', onClickDocumentHandler);
 
         Object.values(teleportElements.value)

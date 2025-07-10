@@ -1,7 +1,7 @@
 <template>
-    <div>
+    <div class="testing">
         <template
-            v-for="(element, link) in teleportElements"
+            v-for="([projectPath, element], link) in teleportElements"
             :key="link"
         >
             <teleport
@@ -13,9 +13,9 @@
                     :key="label"
                 >
                     <GLabel
-                        :color="labels.get(label)?.color"
+                        :color="getProjectLabel(projectPath, label)!.color"
                         :label="label"
-                        :text-color="labels.get(label)?.text_color"
+                        :text-color="getProjectLabel(projectPath, label)!.text_color"
                     />
                 </template>
             </teleport>
@@ -27,8 +27,12 @@
     lang="ts"
     setup
 >
+    import { useFetch } from '@vueuse/core';
+    import { uniq } from 'lodash-es';
     import {
         computed,
+        nextTick,
+        onBeforeUnmount,
         onMounted,
         type Ref,
         ref,
@@ -36,40 +40,50 @@
         shallowRef,
         watch,
     } from 'vue';
-    import { useFetch } from '@vueuse/core';
+    import { useMitt } from '../composables/useMitt';
     import {
+        MittEventKey,
         Preference,
-        useExtensionStore,
-    } from '../store';
+    } from '../enums';
+    import { useExtensionStore } from '../store';
     import GLabel from './GLabel.vue';
-    import { useFetchPaging } from '../composables/useFetchPaging';
 
-    const { getSetting } = useExtensionStore();
+    const {
+        on,
+        off,
+    } = useMitt();
 
-    const labels = ref(new Map());
-    const todoLinks: ShallowRef<Array<string>> = shallowRef([]);
+    const {
+        getSetting,
+        getProjectLabels,
+        getProjectLabel,
+    } = useExtensionStore();
+
+    const todoLinks: ShallowRef<Array<[string, string]>> = shallowRef([]);
     const todoLabels: Ref<Map<string, string>> = ref(new Map());
-    const teleportElements: Ref<Record<string, HTMLElement>> = ref({});
+    const teleportElements: Ref<Record<string, [string, HTMLElement]>> = ref({});
 
-    const projectPaths = computed(() => todoLinks.value.reduce((acc: Array<string>, link: string) => {
-        const path: string = link.split('/-/')?.[0] || '';
+    const projectPaths = computed(() => uniq(todoLinks.value.map(([path]) => path)));
 
-        if (path && !acc.includes(path)) {
-            acc.push(path);
-        }
+    function extractIssuableLinksOldUi() {
+        const values: Array<[string, string]> = [];
 
-        return acc;
-    }, []));
-
-    function extractIssuableLinks() {
-        const values: Array<string> = [];
         document.querySelectorAll('.todo-item a.todo-target-link')
             .forEach((element) => {
                 const href = element.getAttribute('href')
                     ?.substring(1) || '';
-                if (href) {
-                    values.push(href);
+
+                if (!href) {
+                    return;
                 }
+
+                const splitted = href.split('/-/');
+                const projectPath = splitted.length <= 1 ? '' : splitted[0];
+
+                values.push([
+                    projectPath,
+                    splitted[1] || '',
+                ]);
 
                 const targetElement = element.closest('li.todo')
                     ?.querySelector('div.todo-item');
@@ -81,20 +95,84 @@
                 teleportItem.className = 'todo-item__labels';
                 targetElement.append(teleportItem);
 
-                teleportElements.value[href] = teleportItem;
+                teleportElements.value[href] = [
+                    projectPath,
+                    teleportItem,
+                ];
             });
 
         todoLinks.value = values;
     }
 
+    function extractIssuableLinks(itemSelector: string, teleportParentSelector: string, teleportTargetSelector: string) {
+        const itemElements = document.querySelectorAll(itemSelector);
+        if (itemElements.length === 0) {
+            return false;
+        }
+
+        const values: Array<[string, string]> = [];
+
+        itemElements.forEach((element) => {
+            let href = element.getAttribute('href')
+                ?.replace(window.location.origin, '') || '';
+
+            if (!href) {
+                return;
+            }
+
+            if (href.startsWith('/')) {
+                href = href.substring(1);
+            }
+
+            const splitted = href.split('/-/');
+            const projectPath = splitted.length <= 1 ? '' : splitted[0];
+
+            values.push([
+                projectPath,
+                splitted[1] || '',
+            ]);
+
+            const targetElement = element.closest(teleportParentSelector)
+                ?.querySelector(teleportTargetSelector);
+
+            if (!targetElement || targetElement.children[targetElement.children.length - 1]?.className === 'todo-item__labels') {
+                return;
+            }
+
+            const teleportItem = document.createElement('div');
+            teleportItem.className = 'todo-item__labels';
+            targetElement.append(teleportItem);
+
+            teleportElements.value[href] = [
+                projectPath,
+                teleportItem,
+            ];
+        });
+
+        todoLinks.value = values;
+    }
+
+    async function initialize() {
+        if (!getSetting(Preference.TODO_RENDER_LABELS, true)) {
+            return;
+        }
+
+        await nextTick();
+
+        extractIssuableLinksOldUi();
+
+        if (!todoLinks.value.length) {
+            extractIssuableLinks('ol[data-testid="todo-item-list"] li > a.gl-link', 'li', 'a > div');
+        }
+    }
+
     function fetchTodoLabels() {
-        todoLinks.value.forEach((link) => {
-            const path: string = link.split('/-/')?.[0] || '';
+        todoLinks.value.forEach(([path, link]) => {
             if (!path) {
                 return;
             }
 
-            const regex = /\/(merge_requests|issues)\/(\d+)/;
+            const regex = /^(merge_requests|issues)\/(\d+)/;
             const match = link.match(regex);
             if (!match?.[1] && !match?.[2]) {
                 return;
@@ -104,7 +182,7 @@
                 .json()
                 .then(({ data }) => {
                     if (data.value?.labels?.length > 0) {
-                        todoLabels.value.set(link, data.value.labels);
+                        todoLabels.value.set(`${path}/-/${link}`, data.value.labels);
                     }
                 });
         });
@@ -112,18 +190,7 @@
 
     function fetchProjectLabels() {
         projectPaths.value.forEach((path) => {
-            useFetchPaging(`/api/v4/projects/${encodeURIComponent(path)}/labels`)
-                .then(({ data }) => {
-                    if (Array.isArray(data.value)) {
-                        data.value.forEach((item) => {
-                            if (labels.value.has(item.name)) {
-                                return;
-                            }
-
-                            labels.value.set(item.name, item);
-                        });
-                    }
-                });
+            getProjectLabels(path);
         });
     }
 
@@ -131,8 +198,12 @@
     watch(todoLinks, fetchTodoLabels);
 
     onMounted(() => {
-        if (getSetting(Preference.TODO_RENDER_LABELS, true)) {
-            extractIssuableLinks();
-        }
+        initialize();
+
+        on(MittEventKey.GRAPHQL_REQUEST_COMPLETED, initialize);
+    });
+
+    onBeforeUnmount(() => {
+        off(MittEventKey.GRAPHQL_REQUEST_COMPLETED, initialize);
     });
 </script>

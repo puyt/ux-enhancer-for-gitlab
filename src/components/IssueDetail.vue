@@ -262,36 +262,34 @@
     } from '../assets/icons';
     import { useFetchPaging } from '../composables/useFetchPaging';
     import { useThreadsByDefault } from '../composables/useThreadsByDefault';
-    import {
-        Preference,
-        useExtensionStore,
-    } from '../store';
+    import { useExtensionStore } from '../store';
     import type {
         GitLabDiscussion,
         GitlabIssue,
     } from '../types';
     import SvgIcon from './SvgIcon.vue';
+    import { Preference } from '../enums';
 
     interface Props {
-        gitlabUserId: number,
         iid: number,
         currentProjectPath: string,
     }
 
     const props = withDefaults(defineProps<Props>(), {
-        gitlabUserId: 0,
         iid: 0,
         currentProjectPath: '',
     });
     const {
-        gitlabUserId,
         iid,
         currentProjectPath,
     } = toRefs(props);
 
     useThreadsByDefault();
 
-    const { getSetting } = useExtensionStore();
+    const {
+        gitlabUserId,
+        getSetting,
+    } = useExtensionStore();
 
     const isMenuVisible = ref(false);
     const teleportElement: Ref<HTMLElement | null> = ref(null);
@@ -305,15 +303,15 @@
         const thread = discussion?.notes?.[0] || null;
         return !!thread?.resolvable && !thread?.resolved;
     }));
-    const myUnresolvedThreads = computed(() => unresolvedThreads.value.filter((discussion) => discussion?.notes?.[0]?.author?.id === gitlabUserId.value));
+    const myUnresolvedThreads = computed(() => unresolvedThreads.value.filter((discussion) => discussion?.notes?.[0]?.author?.id === gitlabUserId));
     const myUnresolveThreadsWithResponses = computed(() => myUnresolvedThreads.value.filter((discussion) => {
         const notes = (discussion?.notes || []).filter((note) => !note.system);
 
         const firstNote = notes?.[0] || null;
         const lastNote = notes?.[notes.length - 1] || null;
 
-        const isMyThread = !!firstNote?.resolvable && !firstNote?.resolved && firstNote?.author?.id === gitlabUserId.value;
-        const hasResponse = lastNote && !lastNote.system && lastNote.author.id !== gitlabUserId.value;
+        const isMyThread = !!firstNote?.resolvable && !firstNote?.resolved && firstNote?.author?.id === gitlabUserId;
+        const hasResponse = lastNote && !lastNote.system && lastNote.author.id !== gitlabUserId;
 
         return isMyThread && hasResponse;
     }));

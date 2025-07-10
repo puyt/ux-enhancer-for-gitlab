@@ -8,10 +8,8 @@ import {
     onBeforeUnmount,
     ref,
 } from 'vue';
-import {
-    Preference,
-    useExtensionStore,
-} from '../store';
+import { useExtensionStore } from '../store';
+import { Preference } from '../enums';
 
 export function usePersistentFilters() {
     const { getSetting } = useExtensionStore();

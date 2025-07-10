@@ -4,10 +4,8 @@ import {
     useFetch,
     watchDebounced,
 } from '@vueuse/core';
-import {
-    Preference,
-    useExtensionStore,
-} from '../store';
+import { useExtensionStore } from '../store';
+import { Preference } from '../enums';
 
 export function useHighlightMyApprovals(gitlabUserId: number) {
     if (!gitlabUserId || !window.location.href.includes('merge_requests')) {

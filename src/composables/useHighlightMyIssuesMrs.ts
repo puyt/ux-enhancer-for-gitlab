@@ -1,9 +1,7 @@
 import { debounce } from 'lodash-es';
-import {
-    Preference,
-    useExtensionStore,
-} from '../store';
+import { useExtensionStore } from '../store';
 import { computed } from 'vue';
+import { Preference } from '../enums';
 
 export function useHighlightMyIssuesMrs() {
     const { getSetting } = useExtensionStore();

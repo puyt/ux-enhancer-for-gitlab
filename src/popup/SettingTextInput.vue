@@ -40,10 +40,11 @@
 
     interface Props {
         label: string,
-        title: string,
+        title?: string,
         settingKey: string
-        isSensitive: boolean
+        isSensitive?: boolean
     }
+
     const props = withDefaults(defineProps<Props>(), {
         title: '',
         isSensitive: false,
@@ -61,7 +62,7 @@
     }
 
     onMounted(() => {
-        chrome.storage.local.get([props.settingKey],  (result: any) => {
+        chrome.storage.local.get([props.settingKey], (result: any) => {
             settingValue.value = result?.[props.settingKey] || '';
         });
     });
@@ -86,14 +87,14 @@
         width: 100%;
         min-height: 32px;
         padding: 3px 4px;
-        border-radius: 4px;
         border-color: transparent;
+        border-radius: 4px;
     }
 
     button {
-        color: white;
         min-width: 32px;
         margin-left: 8px;
+        color: white;
         border: 1px solid white;
         border-radius: 4px;
         outline: none;
@@ -102,13 +103,13 @@
         -webkit-tap-highlight-color: transparent;
 
         &:hover {
-            color: #7B45C8;
+            color: #7b45c8;
             cursor: pointer;
             background-color: rgba(255, 255, 255, 0.5);
         }
 
         &:active {
-            color: #7B45C8;
+            color: #7b45c8;
             background-color: rgba(255, 255, 255, 0.7);
         }
     }

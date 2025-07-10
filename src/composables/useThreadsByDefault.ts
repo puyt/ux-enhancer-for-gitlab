@@ -1,11 +1,9 @@
-import {
-    Preference,
-    useExtensionStore,
-} from '../store';
+import { useExtensionStore } from '../store';
 import {
     computed,
     onMounted,
 } from 'vue';
+import { Preference } from '../enums';
 
 export function useThreadsByDefault() {
     const { getSetting } = useExtensionStore();
@@ -22,6 +20,6 @@ export function useThreadsByDefault() {
 
     onMounted(() => {
         const element = document.querySelector('form.common-note-form .note-form-actions .js-comment-submit-button ul.gl-new-dropdown-contents li[data-testid="listbox-item-discussion"]') as HTMLElement;
-        element?.click()
+        element?.click();
     });
 }

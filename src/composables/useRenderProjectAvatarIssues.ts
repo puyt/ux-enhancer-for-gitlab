@@ -1,21 +1,15 @@
-import { useFetch } from '@vueuse/core';
 import { debounce } from 'lodash-es';
 import { computed } from 'vue';
-import {
-    Preference,
-    useExtensionStore,
-} from '../store';
+import { Preference } from '../enums';
+import { useExtensionStore } from '../store';
 import { useExtractProjectPaths } from './useExtractProjectPaths';
 
-async function fetchProject(path: string | number) {
-    const { data } = await useFetch(`/api/v4/projects/${encodeURIComponent(path)}?is_custom=1`)
-        .json();
-
-    return data?.value || null;
-}
-
 export function useRenderProjectAvatarIssues() {
-    const { getSetting } = useExtensionStore();
+    const {
+        getSetting,
+        getProject,
+    } = useExtensionStore();
+
     const { extract: extractProjectPaths } = useExtractProjectPaths();
 
     const projectAvatars = {};
@@ -31,27 +25,45 @@ export function useRenderProjectAvatarIssues() {
         }
 
         if (isInjectAvatarTodoEnabled.value && window.location.href.includes('todos')) {
-            const targetElements = document.querySelectorAll(`ul.todos-list a.todo-target-link[href*="${projectPath}"]`);
+            let targetElements = document.querySelectorAll(`ul.todos-list a.todo-target-link[href*="${projectPath}"]`);
+            if (targetElements.length === 0) {
+                targetElements = document.querySelectorAll(`ol[data-testid="todo-item-list"] li > a.gl-link[href*="${projectPath}"]`);
+            }
+
             targetElements.forEach((targetElement) => {
                 const parentElement = (targetElement.closest('li')?.children?.[0] || null) as HTMLElement | null;
-                if (parentElement && !parentElement.children?.[0].classList.contains('glab-enhancer-browser-extension__project-avatar')) {
-                    let injectElement: HTMLElement;
-                    if (!avatarUrl.includes('http')) {
-                        injectElement = document.createElement('div');
-                        injectElement.className = 'gl-avatar gl-avatar-identicon gl-avatar-s24 gl-avatar-identicon-bg6';
-                        injectElement.textContent = avatarUrl;
-                    } else {
-                        injectElement = document.createElement('img');
-                        injectElement.setAttribute('src', avatarUrl);
-                        injectElement.setAttribute('style', 'width: 24px;');
-                    }
-
-                    injectElement.classList.add('gl-mr-4', 'glab-enhancer-browser-extension__project-avatar');
-                    injectElement.style.alignItems = 'center';
-
-                    parentElement.prepend(injectElement);
-                    parentElement.style.alignItems = 'center';
+                if (!parentElement) {
+                    return;
                 }
+
+                const avatarElement = parentElement.querySelector('img.glab-enhancer-browser-extension__project-avatar');
+                if (avatarElement) {
+                    return;
+                }
+
+                let injectElement: HTMLElement;
+                if (!avatarUrl.includes('http')) {
+                    injectElement = document.createElement('div');
+                    injectElement.className = 'gl-avatar gl-avatar-identicon gl-avatar-s24 gl-avatar-identicon-bg6';
+                    injectElement.textContent = avatarUrl;
+                } else {
+                    injectElement = document.createElement('img');
+                    injectElement.setAttribute('src', avatarUrl);
+                    injectElement.setAttribute('style', 'width: 24px;');
+                }
+
+                injectElement.classList.add('gl-mr-4', 'glab-enhancer-browser-extension__project-avatar');
+                injectElement.style.alignItems = 'center';
+
+                if (parentElement.children?.[0]?.getAttribute('type') === 'checkbox') {
+                    injectElement.classList.add('gl-ml-4');
+                    parentElement.append(injectElement);
+                } else {
+                    parentElement.prepend(injectElement);
+                }
+
+                parentElement.style.display = 'flex';
+                parentElement.style.alignItems = 'center';
             });
         }
 
@@ -98,7 +110,8 @@ export function useRenderProjectAvatarIssues() {
         }
 
         if (isInjectAvatarMergeRequestEnabled.value && (window.location.href.includes('merge_requests') && (window.location.href.includes('groups') || window.location.href.includes('dashboard')))) {
-            const targetElements = document.querySelectorAll(`.issuable-list .merge-request-title-text a[href*="${projectPath}"]`);
+            const targetElements = document.querySelectorAll(`.issuable-list .merge-request-title-text a[href*="${projectPath}"], .issuable-list .issue-title a[href*="${projectPath}"]`);
+
             targetElements.forEach((targetElement) => {
                 const parentElement = targetElement?.closest('li') || null;
 
@@ -126,17 +139,14 @@ export function useRenderProjectAvatarIssues() {
 
     function injectAvatars() {
         const paths = extractProjectPaths();
-        paths.forEach((path) => {
-            if (!projectAvatars[path]) {
-                fetchProject(path)
-                    .then((data) => {
-                        projectAvatars[path] = data?.avatar_url || data?.name?.charAt(0) || null;
 
-                        injectAvatar(path);
-                    });
-            } else {
-                injectAvatar(path);
-            }
+        paths.forEach((path) => {
+            getProject(path)
+                .then((project) => {
+                    projectAvatars[path] = project?.avatar_url || project?.name?.charAt(0) || null;
+
+                    injectAvatar(path);
+                });
         });
     }
 

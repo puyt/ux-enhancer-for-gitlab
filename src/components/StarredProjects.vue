@@ -116,10 +116,7 @@
     import { useFetch } from '@vueuse/core';
     import type { GitLabProject } from '../types';
     import { mdiViewDashboardOutline } from '@mdi/js';
-    import {
-        Preference,
-        useExtensionStore,
-    } from '../store';
+    import { useExtensionStore } from '../store';
     import {
         gSvgIssue,
         gSvgMergeRequest,
@@ -127,6 +124,7 @@
     } from '../assets/icons';
     import SvgIcon from './SvgIcon.vue';
     import { useFetchPaging } from '../composables/useFetchPaging';
+    import { Preference } from '../enums';
 
     interface Props {
         gitlabUserId: number,

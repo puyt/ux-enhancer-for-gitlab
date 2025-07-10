@@ -36,7 +36,7 @@
         label: string,
         color: string,
         textColor: string,
-        isSmall: boolean,
+        isSmall?: boolean,
     }
 
     withDefaults(defineProps<Props>(), {

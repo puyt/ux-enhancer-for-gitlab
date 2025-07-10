@@ -1,8 +1,6 @@
-import {
-    Preference,
-    useExtensionStore,
-} from '../store';
+import { useExtensionStore } from '../store';
 import { debounce } from 'lodash-es';
+import { Preference } from '../enums';
 
 export function useDimDraftMrs() {
     const { getSetting } = useExtensionStore();
@@ -12,14 +10,15 @@ export function useDimDraftMrs() {
             return;
         }
 
-        document.querySelectorAll('li.merge-request').forEach((element) => {
-            if (element.textContent?.includes('Draft:')) {
-                element.classList.add('merge-request-draft');
-            }
-        });
+        document.querySelectorAll('li.merge-request')
+            .forEach((element) => {
+                if (element.textContent?.includes('Draft:')) {
+                    element.classList.add('merge-request-draft');
+                }
+            });
     }
 
     return {
         dim: debounce(dim, 300),
-    }
+    };
 }

@@ -20,7 +20,7 @@
 
     interface Props {
         path: string,
-        isGitlab: boolean,
+        isGitlab?: boolean,
     }
 
     const props = withDefaults(defineProps<Props>(), {
