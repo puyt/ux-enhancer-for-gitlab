@@ -7,6 +7,11 @@ This powerful extension introduces a suite of features specifically designed to 
 
 [Chrome Web Store](https://chromewebstore.google.com/detail/ux-enhancer-for-gitlab/jkddbjinnohhgelaibifeapocefcgmeb?authuser=0&hl=nl) | [Mozilla Add-on](https://addons.mozilla.org/nl/firefox/addon/ux-enhancer-for-gitlab/) | [GitHub](https://github.com/puyt/ux-enhancer-for-gitlab)
 
+## ⚠️ Notice
+
+GitLab is slowly rolling out updates to its UI as part of the "work items" overhaul. Since this extension heavily depends on the DOM, some features might not function properly with the new UI.
+I only have access to the GitLab version used at our company, so I might not catch every change. I'm working on fixing the broken features one by one and aim to maintain backwards compatibility, though I can't fully verify it.
+
 ## ✨ Features
 
 **General**

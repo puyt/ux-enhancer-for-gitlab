@@ -1,5 +1,23 @@
 # Changelog
 
+## ⚠️ Notice
+
+GitLab is gradually updating its UI as part of the "work items" overhaul. Since this extension heavily depends on the DOM, some features might not function properly with the new UI.
+I only have access to the GitLab version used at our company, so I might not catch every change. I'm working on fixing the broken features one by one, while trying to make it backwards compatible which I cannot verify.
+
+## 4.5.0 - 2025.07 (10/07/2025)
+
+### 🚀 Performance
+
+- Cached project avatars and labels in local storage to reduce API calls. Use the clear cache button in the preferences menu to clear the cache.
+
+### 🪲 Bug Fixes
+
+- Fix alignment of the preferences button in projects dashboard. ([#39](https://github.com/puyt/ux-enhancer-for-gitlab/issues/39))
+- Fix scoped labels dropdown in issue detail.
+- Fix project avatars in the todo page and MR group page.
+- Fix issue & MR labels in the todo page.
+
 ## 4.4.0 - 2025.5.2 (25/05/2025)
 
 ### ✨ Features
