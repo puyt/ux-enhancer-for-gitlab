@@ -548,6 +548,11 @@
 
     const offsetRight = ref(0);
     onMounted(() => {
+        const topbarContainerElement = document.querySelector('.top-bar-container');
+        if (!topbarContainerElement || topbarContainerElement.childElementCount <= 1) {
+            return;
+        }
+
         const offsetElements: NodeListOf<HTMLDivElement> = document.querySelectorAll('.top-bar-container > div:last-child > *');
 
         offsetElements.forEach((el) => {
