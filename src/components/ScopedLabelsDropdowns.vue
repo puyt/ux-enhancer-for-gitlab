@@ -159,6 +159,10 @@
             const suffix = parentElement?.querySelector('span.gl-label-text-scoped')?.textContent?.trim();
             labelName = suffix ? `${prefix}::${suffix}` : prefix;
         }
+        
+        if (!labelName.includes('::')) {
+            return;
+        }
 
         const scope = labelName.split('::')[0] || '';
 
@@ -199,6 +203,10 @@
                 labelName = suffix ? `${prefix}::${suffix}` : prefix;
             }
 
+            if (!labelName.includes('::')) {
+                return;
+            }
+            
             const scopePrefix = labelName.split('::')[0];
 
             if (!scopePrefix) {
