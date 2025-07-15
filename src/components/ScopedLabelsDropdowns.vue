@@ -210,7 +210,8 @@
             const scopeSpanElement = element.querySelector('span.gl-label-text');
             scopeSpanElement?.setAttribute('style', 'border-radius: 16px 0 0 16px;');
 
-            const teleportElement = element.querySelector('span.gl-label-text-scoped');
+            const teleportElement = element.querySelector('span.gl-label-text-scoped')
+                || element.querySelector('span.gl-label-text');
             if (teleportElement && !teleportElements.value[scopePrefix]) {
                 teleportElements.value[scopePrefix] = teleportElement as HTMLElement;
                 teleportElement.addEventListener('click', onClickLabelHandler);
