@@ -144,7 +144,7 @@
         event.preventDefault();
         const target = event.target as HTMLElement;
 
-        document.querySelectorAll('div.labels-select-wrapper span.gl-label, section.js-labels.work-item-attributes-item span.gl-label')
+        document.querySelectorAll('div.labels-select-wrapper span.gl-label, section.js-labels.work-item-attributes-item span.gl-label, section.work-item-labels-block span.gl-label, div.work-item-labels span.gl-label, section[data-testid="work-item-labels"] span.gl-label')
             .forEach((element) => {
                 const spanElement = element as HTMLSpanElement;
                 spanElement.style.zIndex = 'initial';
@@ -152,8 +152,19 @@
 
         const parentElement = target?.parentElement?.parentElement as HTMLSpanElement || null;
 
-        const scope = (parentElement?.getAttribute('data-qa-label-name') || parentElement?.getAttribute('data-testid'))
-            ?.split('::')?.[0] || '';
+        let labelName = parentElement?.getAttribute('data-qa-label-name') || parentElement?.getAttribute('data-testid') || '';
+
+        if (!labelName) {
+            const prefix = parentElement?.querySelector('span.gl-label-text')?.textContent?.trim() || '';
+            const suffix = parentElement?.querySelector('span.gl-label-text-scoped')?.textContent?.trim();
+            labelName = suffix ? `${prefix}::${suffix}` : prefix;
+        }
+
+        if (!labelName.includes('::')) {
+            return;
+        }
+
+        const scope = labelName.split('::')[0] || '';
 
         if (parentElement) {
             parentElement.style.zIndex = '1';
@@ -173,21 +184,30 @@
     }
 
     function injectTeleports() {
-        if (!iid.value || !document.querySelector('div.labels-select-wrapper .shortcut-sidebar-dropdown-toggle, section.js-labels.work-item-attributes-item .shortcut-sidebar-dropdown-toggle')) {
+        if (!iid.value || !document.querySelector('div.labels-select-wrapper .shortcut-sidebar-dropdown-toggle, section.js-labels.work-item-attributes-item .shortcut-sidebar-dropdown-toggle, section.work-item-labels-block .shortcut-sidebar-dropdown-toggle, div.work-item-labels .shortcut-sidebar-dropdown-toggle, section[data-testid="work-item-labels"] .shortcut-sidebar-dropdown-toggle')) {
             return;
         }
 
-        const labelsWrapperElement = document.querySelector('div.labels-select-wrapper, section.js-labels.work-item-attributes-item');
+        const labelsWrapperElement = document.querySelector('div.labels-select-wrapper, section.js-labels.work-item-attributes-item, section.work-item-labels-block, div.work-item-labels, section[data-testid="work-item-labels"]');
         if (!labelsWrapperElement) {
             return;
         }
 
-        const labelElements = labelsWrapperElement.querySelectorAll(`span.gl-label[data-qa-label-name*="::"], span.gl-label-scoped[data-testid*="::"]`);
+        const labelElements = labelsWrapperElement.querySelectorAll('span.gl-label');
 
         labelElements.forEach((element) => {
-            const scopePrefix = element.getAttribute('data-qa-label-name')
-                ?.split('::')[0] || element.getAttribute('data-testid')
-                ?.split('::')[0];
+            let labelName = element.getAttribute('data-qa-label-name') || element.getAttribute('data-testid') || '';
+            if (!labelName) {
+                const prefix = element.querySelector('span.gl-label-text')?.textContent?.trim() || '';
+                const suffix = element.querySelector('span.gl-label-text-scoped')?.textContent?.trim();
+                labelName = suffix ? `${prefix}::${suffix}` : prefix;
+            }
+
+            if (!labelName.includes('::')) {
+                return;
+            }
+
+            const scopePrefix = labelName.split('::')[0];
 
             if (!scopePrefix) {
                 return;
@@ -198,7 +218,8 @@
             const scopeSpanElement = element.querySelector('span.gl-label-text');
             scopeSpanElement?.setAttribute('style', 'border-radius: 16px 0 0 16px;');
 
-            const teleportElement = element.querySelector('span.gl-label-text-scoped');
+            const teleportElement = element.querySelector('span.gl-label-text-scoped')
+                || element.querySelector('span.gl-label-text');
             if (teleportElement && !teleportElements.value[scopePrefix]) {
                 teleportElements.value[scopePrefix] = teleportElement as HTMLElement;
                 teleportElement.addEventListener('click', onClickLabelHandler);
