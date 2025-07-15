@@ -8,6 +8,12 @@ module.exports = {
         'eslint:recommended',
         '@vue/eslint-config-typescript',
     ],
+    env: {
+        browser: true,
+    },
+    globals: {
+        chrome: 'readonly',
+    },
     parserOptions: {
         ecmaVersion: 'latest',
     },
