@@ -97,14 +97,25 @@
     const offsetLeft = ref('0');
 
     const isIssueBoard = computed(() => window.location.href.includes('/-/boards'));
+
     const iid = computed(() => {
         if (props.iid) {
             return props.iid;
         }
 
+        const searchParams = new URLSearchParams(window.location.search);
+        const queryIid = searchParams.get('issue_iid')
+            || searchParams.get('work_item_iid');
+        if (queryIid) {
+            return parseInt(queryIid, 10);
+        }
+
         if (isIssueBoard.value) {
-            return parseInt(document.querySelector('li.board-card.is-active')
-                ?.getAttribute('data-item-iid') || '0');
+            const activeCard = document.querySelector('li.board-card.is-active') as HTMLElement | null;
+            const iidAttr = activeCard?.getAttribute('data-item-iid')
+                || activeCard?.getAttribute('data-issue-iid')
+                || activeCard?.getAttribute('data-work-item-iid');
+            return parseInt(iidAttr || '0', 10);
         }
 
         return 0;
@@ -115,10 +126,19 @@
             return props.currentProjectPath;
         }
 
+        const searchParams = new URLSearchParams(window.location.search);
+        const queryPath = searchParams.get('issue_path')
+            || searchParams.get('work_item_path');
+        if (queryPath) {
+            return queryPath.split('#')[0];
+        }
+
         if (isIssueBoard.value) {
-            return document.querySelector('li.board-card.is-active')
-                ?.getAttribute('data-item-path')
-                ?.split('#')?.[0] || '';
+            const activeCard = document.querySelector('li.board-card.is-active') as HTMLElement | null;
+            const pathAttr = activeCard?.getAttribute('data-item-path')
+                || activeCard?.getAttribute('data-issue-path')
+                || activeCard?.getAttribute('data-work-item-path');
+            return pathAttr?.split('#')?.[0] || '';
         }
 
         return '';
@@ -150,7 +170,7 @@
                 spanElement.style.zIndex = 'initial';
             });
 
-        const parentElement = target?.parentElement?.parentElement as HTMLSpanElement || null;
+        const parentElement = target.closest('span.gl-label') as HTMLSpanElement | null;
 
         let labelName = parentElement?.getAttribute('data-qa-label-name') || parentElement?.getAttribute('data-testid') || '';
 
@@ -159,7 +179,7 @@
             const suffix = parentElement?.querySelector('span.gl-label-text-scoped')?.textContent?.trim();
             labelName = suffix ? `${prefix}::${suffix}` : prefix;
         }
-        
+
         if (!labelName.includes('::')) {
             return;
         }
@@ -177,9 +197,7 @@
         await fetchMultipleProjectLabels();
 
         setTimeout(() => {
-            if (document.querySelector('#js-right-sidebar-portal .gl-drawer-header')) {
-                deboundedInjectTeleports();
-            }
+            deboundedInjectTeleports();
         }, 400);
     }
 
@@ -189,6 +207,7 @@
         }
 
         const labelsWrapperElement = document.querySelector('div.labels-select-wrapper, section.js-labels.work-item-attributes-item, section[data-testid="work-item-labels"]');
+
         if (!labelsWrapperElement) {
             return;
         }
@@ -206,7 +225,7 @@
             if (!labelName.includes('::')) {
                 return;
             }
-            
+
             const scopePrefix = labelName.split('::')[0];
 
             if (!scopePrefix) {
