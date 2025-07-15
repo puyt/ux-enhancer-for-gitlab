@@ -144,7 +144,7 @@
         event.preventDefault();
         const target = event.target as HTMLElement;
 
-        document.querySelectorAll('div.labels-select-wrapper span.gl-label, section.js-labels.work-item-attributes-item span.gl-label, section.work-item-labels-block span.gl-label, div.work-item-labels span.gl-label, section[data-testid="work-item-labels"] span.gl-label')
+        document.querySelectorAll('div.labels-select-wrapper span.gl-label, section.js-labels.work-item-attributes-item span.gl-label, section[data-testid="work-item-labels"] span.gl-label')
             .forEach((element) => {
                 const spanElement = element as HTMLSpanElement;
                 spanElement.style.zIndex = 'initial';
@@ -184,11 +184,11 @@
     }
 
     function injectTeleports() {
-        if (!iid.value || !document.querySelector('div.labels-select-wrapper .shortcut-sidebar-dropdown-toggle, section.js-labels.work-item-attributes-item .shortcut-sidebar-dropdown-toggle, section.work-item-labels-block .shortcut-sidebar-dropdown-toggle, div.work-item-labels .shortcut-sidebar-dropdown-toggle, section[data-testid="work-item-labels"] .shortcut-sidebar-dropdown-toggle')) {
+        if (!iid.value || !document.querySelector('div.labels-select-wrapper .shortcut-sidebar-dropdown-toggle, section.js-labels.work-item-attributes-item .shortcut-sidebar-dropdown-toggle, section[data-testid="work-item-labels"] .shortcut-sidebar-dropdown-toggle')) {
             return;
         }
 
-        const labelsWrapperElement = document.querySelector('div.labels-select-wrapper, section.js-labels.work-item-attributes-item, section.work-item-labels-block, div.work-item-labels, section[data-testid="work-item-labels"]');
+        const labelsWrapperElement = document.querySelector('div.labels-select-wrapper, section.js-labels.work-item-attributes-item, section[data-testid="work-item-labels"]');
         if (!labelsWrapperElement) {
             return;
         }
