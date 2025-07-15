@@ -97,14 +97,25 @@
     const offsetLeft = ref('0');
 
     const isIssueBoard = computed(() => window.location.href.includes('/-/boards'));
+
     const iid = computed(() => {
         if (props.iid) {
             return props.iid;
         }
 
+        const searchParams = new URLSearchParams(window.location.search);
+        const queryIid = searchParams.get('issue_iid')
+            || searchParams.get('work_item_iid');
+        if (queryIid) {
+            return parseInt(queryIid, 10);
+        }
+
         if (isIssueBoard.value) {
-            return parseInt(document.querySelector('li.board-card.is-active')
-                ?.getAttribute('data-item-iid') || '0');
+            const activeCard = document.querySelector('li.board-card.is-active') as HTMLElement | null;
+            const iidAttr = activeCard?.getAttribute('data-item-iid')
+                || activeCard?.getAttribute('data-issue-iid')
+                || activeCard?.getAttribute('data-work-item-iid');
+            return parseInt(iidAttr || '0', 10);
         }
 
         return 0;
@@ -115,10 +126,19 @@
             return props.currentProjectPath;
         }
 
+        const searchParams = new URLSearchParams(window.location.search);
+        const queryPath = searchParams.get('issue_path')
+            || searchParams.get('work_item_path');
+        if (queryPath) {
+            return queryPath.split('#')[0];
+        }
+
         if (isIssueBoard.value) {
-            return document.querySelector('li.board-card.is-active')
-                ?.getAttribute('data-item-path')
-                ?.split('#')?.[0] || '';
+            const activeCard = document.querySelector('li.board-card.is-active') as HTMLElement | null;
+            const pathAttr = activeCard?.getAttribute('data-item-path')
+                || activeCard?.getAttribute('data-issue-path')
+                || activeCard?.getAttribute('data-work-item-path');
+            return pathAttr?.split('#')?.[0] || '';
         }
 
         return '';
@@ -144,16 +164,27 @@
         event.preventDefault();
         const target = event.target as HTMLElement;
 
-        document.querySelectorAll('div.labels-select-wrapper span.gl-label, section.js-labels.work-item-attributes-item span.gl-label')
+        document.querySelectorAll('div.labels-select-wrapper span.gl-label, section.js-labels.work-item-attributes-item span.gl-label, section.work-item-labels-block span.gl-label, div.work-item-labels span.gl-label, section[data-testid="work-item-labels"] span.gl-label, div[data-testid="selected-label-content"] span.gl-label')
             .forEach((element) => {
                 const spanElement = element as HTMLSpanElement;
                 spanElement.style.zIndex = 'initial';
             });
 
-        const parentElement = target?.parentElement?.parentElement as HTMLSpanElement || null;
+        const parentElement = target.closest('span.gl-label') as HTMLSpanElement | null;
 
-        const scope = (parentElement?.getAttribute('data-qa-label-name') || parentElement?.getAttribute('data-testid'))
-            ?.split('::')?.[0] || '';
+        let labelName = parentElement?.getAttribute('data-qa-label-name') || parentElement?.getAttribute('data-testid') || '';
+
+        if (!labelName) {
+            const prefix = parentElement?.querySelector('span.gl-label-text')?.textContent?.trim() || '';
+            const suffix = parentElement?.querySelector('span.gl-label-text-scoped')?.textContent?.trim();
+            labelName = suffix ? `${prefix}::${suffix}` : prefix;
+        }
+
+        if (!labelName.includes('::')) {
+            return;
+        }
+
+        const scope = labelName.split('::')[0] || '';
 
         if (parentElement) {
             parentElement.style.zIndex = '1';
@@ -166,28 +197,35 @@
         await fetchMultipleProjectLabels();
 
         setTimeout(() => {
-            if (document.querySelector('#js-right-sidebar-portal .gl-drawer-header')) {
-                deboundedInjectTeleports();
-            }
+            deboundedInjectTeleports();
         }, 400);
     }
 
     function injectTeleports() {
-        if (!iid.value || !document.querySelector('div.labels-select-wrapper .shortcut-sidebar-dropdown-toggle, section.js-labels.work-item-attributes-item .shortcut-sidebar-dropdown-toggle')) {
+        if (!iid.value || !document.querySelector('div.labels-select-wrapper .shortcut-sidebar-dropdown-toggle, section.js-labels.work-item-attributes-item .shortcut-sidebar-dropdown-toggle, section.work-item-labels-block .shortcut-sidebar-dropdown-toggle, div.work-item-labels .shortcut-sidebar-dropdown-toggle, section[data-testid="work-item-labels"] .shortcut-sidebar-dropdown-toggle, div[data-testid="work-item-labels"] .shortcut-sidebar-dropdown-toggle')) {
             return;
         }
 
-        const labelsWrapperElement = document.querySelector('div.labels-select-wrapper, section.js-labels.work-item-attributes-item');
+        const labelsWrapperElement = document.querySelector('div.labels-select-wrapper, section.js-labels.work-item-attributes-item, section.work-item-labels-block, div.work-item-labels, section[data-testid="work-item-labels"], div[data-testid="selected-label-content"]');
         if (!labelsWrapperElement) {
             return;
         }
 
-        const labelElements = labelsWrapperElement.querySelectorAll(`span.gl-label[data-qa-label-name*="::"], span.gl-label-scoped[data-testid*="::"]`);
+        const labelElements = labelsWrapperElement.querySelectorAll('span.gl-label');
 
         labelElements.forEach((element) => {
-            const scopePrefix = element.getAttribute('data-qa-label-name')
-                ?.split('::')[0] || element.getAttribute('data-testid')
-                ?.split('::')[0];
+            let labelName = element.getAttribute('data-qa-label-name') || element.getAttribute('data-testid') || '';
+            if (!labelName) {
+                const prefix = element.querySelector('span.gl-label-text')?.textContent?.trim() || '';
+                const suffix = element.querySelector('span.gl-label-text-scoped')?.textContent?.trim();
+                labelName = suffix ? `${prefix}::${suffix}` : prefix;
+            }
+
+            if (!labelName.includes('::')) {
+                return;
+            }
+
+            const scopePrefix = labelName.split('::')[0];
 
             if (!scopePrefix) {
                 return;
@@ -198,7 +236,8 @@
             const scopeSpanElement = element.querySelector('span.gl-label-text');
             scopeSpanElement?.setAttribute('style', 'border-radius: 16px 0 0 16px;');
 
-            const teleportElement = element.querySelector('span.gl-label-text-scoped');
+            const teleportElement = element.querySelector('span.gl-label-text-scoped')
+                || element.querySelector('span.gl-label-text');
             if (teleportElement && !teleportElements.value[scopePrefix]) {
                 teleportElements.value[scopePrefix] = teleportElement as HTMLElement;
                 teleportElement.addEventListener('click', onClickLabelHandler);
