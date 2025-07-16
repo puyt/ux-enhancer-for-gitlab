@@ -97,6 +97,10 @@
     const offsetLeft = ref('0');
 
     const isIssueBoard = computed(() => window.location.href.includes('/-/boards'));
+    const isIssuesList = computed(() => {
+        const { pathname } = window.location;
+        return pathname.includes('/-/issues') && !pathname.match(/\/-\/(?:issues|work_items)\/[0-9]+/);
+    });
 
     const iid = computed(() => {
         if (props.iid) {
@@ -132,6 +136,16 @@
             return parseInt(iidAttr || '0', 10);
         }
 
+        if (isIssuesList.value) {
+            const activeRow = document.querySelector('li.issuable-row.is-active, li.issuable-row.is-focused, li.issuable-row.gl-active, li.issue.is-active, li.issue.gl-active') as HTMLElement | null;
+            const iidAttr = activeRow?.getAttribute('data-item-iid')
+                || activeRow?.getAttribute('data-issue-iid')
+                || activeRow?.getAttribute('data-work-item-iid')
+                || activeRow?.getAttribute('data-iid')
+                || activeRow?.getAttribute('data-id');
+            return parseInt(iidAttr || '0', 10);
+        }
+
         return 0;
     });
 
@@ -157,6 +171,15 @@
             const pathAttr = activeCard?.getAttribute('data-item-path')
                 || activeCard?.getAttribute('data-issue-path')
                 || activeCard?.getAttribute('data-work-item-path');
+            return pathAttr?.split('#')?.[0] || '';
+        }
+
+        if (isIssuesList.value) {
+            const activeRow = document.querySelector('li.issuable-row.is-active, li.issuable-row.is-focused, li.issuable-row.gl-active, li.issue.is-active, li.issue.gl-active') as HTMLElement | null;
+            const pathAttr = activeRow?.getAttribute('data-item-path')
+                || activeRow?.getAttribute('data-issue-path')
+                || activeRow?.getAttribute('data-work-item-path')
+                || activeRow?.getAttribute('data-full-path');
             return pathAttr?.split('#')?.[0] || '';
         }
 
