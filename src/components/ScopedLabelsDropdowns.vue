@@ -97,6 +97,10 @@
     const offsetLeft = ref('0');
 
     const isIssueBoard = computed(() => window.location.href.includes('/-/boards'));
+    const isIssuesList = computed(() => {
+        const { pathname } = window.location;
+        return pathname.includes('/-/issues') && !pathname.match(/\/-\/(?:issues|work_items)\/[0-9]+/);
+    });
 
     const iid = computed(() => {
         if (props.iid) {
@@ -110,11 +114,35 @@
             return parseInt(queryIid, 10);
         }
 
+        const queryPath = searchParams.get('issue_path')
+            || searchParams.get('work_item_path');
+        const queryPathMatch = queryPath?.match(/\/(?:issues|work_items)\/(\d+)/);
+        if (queryPathMatch) {
+            return parseInt(queryPathMatch[1], 10);
+        }
+
+        const pathMatch = window.location.pathname.match(/\/-\/(?:issues|work_items)\/(\d+)/);
+        if (pathMatch) {
+            return parseInt(pathMatch[1], 10);
+        }
+
         if (isIssueBoard.value) {
-            const activeCard = document.querySelector('li.board-card.is-active') as HTMLElement | null;
+            const activeCard = document.querySelector('li.board-card.is-active, li.board-card.is-focused, li.board-card.gl-active') as HTMLElement | null;
             const iidAttr = activeCard?.getAttribute('data-item-iid')
                 || activeCard?.getAttribute('data-issue-iid')
-                || activeCard?.getAttribute('data-work-item-iid');
+                || activeCard?.getAttribute('data-work-item-iid')
+                || activeCard?.getAttribute('data-iid')
+                || activeCard?.getAttribute('data-id');
+            return parseInt(iidAttr || '0', 10);
+        }
+
+        if (isIssuesList.value) {
+            const activeRow = document.querySelector('li.issuable-row.is-active, li.issuable-row.is-focused, li.issuable-row.gl-active, li.issue.is-active, li.issue.gl-active') as HTMLElement | null;
+            const iidAttr = activeRow?.getAttribute('data-item-iid')
+                || activeRow?.getAttribute('data-issue-iid')
+                || activeRow?.getAttribute('data-work-item-iid')
+                || activeRow?.getAttribute('data-iid')
+                || activeRow?.getAttribute('data-id');
             return parseInt(iidAttr || '0', 10);
         }
 
@@ -133,11 +161,25 @@
             return queryPath.split('#')[0];
         }
 
+        const pathMatch = window.location.pathname.match(/^(.*)\/-\/(?:issues|work_items)\/[0-9]+/);
+        if (pathMatch) {
+            return pathMatch[1].substring(1);
+        }
+
         if (isIssueBoard.value) {
             const activeCard = document.querySelector('li.board-card.is-active') as HTMLElement | null;
             const pathAttr = activeCard?.getAttribute('data-item-path')
                 || activeCard?.getAttribute('data-issue-path')
                 || activeCard?.getAttribute('data-work-item-path');
+            return pathAttr?.split('#')?.[0] || '';
+        }
+
+        if (isIssuesList.value) {
+            const activeRow = document.querySelector('li.issuable-row.is-active, li.issuable-row.is-focused, li.issuable-row.gl-active, li.issue.is-active, li.issue.gl-active') as HTMLElement | null;
+            const pathAttr = activeRow?.getAttribute('data-item-path')
+                || activeRow?.getAttribute('data-issue-path')
+                || activeRow?.getAttribute('data-work-item-path')
+                || activeRow?.getAttribute('data-full-path');
             return pathAttr?.split('#')?.[0] || '';
         }
 
