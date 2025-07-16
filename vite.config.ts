@@ -2,30 +2,33 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
-  plugins: [vue()],
-  resolve: {
-    alias: [
-      {
-        find: "@",
-        replacement: "@",
-      },
+    plugins: [
+        vue(),
     ],
-    dedupe: ["vue", "pinia"],
-  },
-  build: {
-    sourcemap: true, // ← generate .js.map files
-    outDir: "dist",
-    target: "esnext",
-    rollupOptions: {
-      input: {
-        main: "./src/main.ts",
-        popup: "./src/popup/popup.ts",
-      },
-      output: {
-        entryFileNames: `assets/[name].js`,
-        assetFileNames: `assets/[name].[ext]`,
-        chunkFileNames: `assets/[name].js`,
-      },
+    resolve: {
+        alias: [
+            {
+                find: '@',
+                replacement: '@',
+            },
+        ],
+        dedupe: [
+            'vue',
+            'pinia',
+        ],
     },
-  },
+    build: {
+        target: 'esnext',
+        rollupOptions: {
+            input: {
+                main: './src/main.ts',
+                popup: './src/popup/popup.ts',
+            },
+            output: {
+                entryFileNames: `assets/[name].js`,
+                assetFileNames: `assets/[name].[ext]`,
+                chunkFileNames: `assets/[name].js`,
+            },
+        },
+    },
 });
