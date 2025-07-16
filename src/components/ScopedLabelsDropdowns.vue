@@ -194,11 +194,8 @@
         const labelsWrapperElement = document.querySelector('div.labels-select-wrapper, section.js-labels.work-item-attributes-item, section[data-testid="work-item-labels"]');
 
         if (labelsWrapperElement) {
-            labelsWrapperElement.querySelectorAll('span.gl-label')
+            labelsWrapperElement.querySelectorAll('span.gl-label:not(.gl-label-scoped)')
                 .forEach((element) => {
-                    if ((element as HTMLElement).closest('.dropdown-menu')) {
-                        return;
-                    }
                     let labelName = element.getAttribute('data-qa-label-name') || element.getAttribute('data-testid') || '';
 
                     if (!labelName) {
@@ -290,14 +287,9 @@
             return;
         }
 
-        const labelElements = labelsWrapperElement.querySelectorAll('span.gl-label');
-
-        const foundScopes = new Set<string>();
+        const labelElements = labelsWrapperElement.querySelectorAll('span.gl-label:not(.gl-label-scoped)');
 
         labelElements.forEach((element) => {
-            if (element.closest('.dropdown-menu')) {
-                return;
-            }
             let labelName = element.getAttribute('data-qa-label-name') || element.getAttribute('data-testid') || '';
             if (!labelName) {
                 const prefix = element.querySelector('span.gl-label-text')?.textContent?.trim() || '';
@@ -311,8 +303,6 @@
 
             const scopePrefix = labelName.split('::')[0];
 
-            foundScopes.add(scopePrefix);
-
             if (!scopePrefix) {
                 return;
             }
@@ -322,8 +312,7 @@
             const scopeSpanElement = element.querySelector('span.gl-label-text');
             scopeSpanElement?.setAttribute('style', 'border-radius: 16px 0 0 16px;');
 
-            const teleportElement = element.querySelector('span.gl-label-text-scoped')
-                || element.querySelector('span.gl-label-text');
+            const teleportElement = element.querySelector('span.gl-label-text');
             if (teleportElement) {
                 const existingElement = teleportElements.value[scopePrefix];
 
@@ -335,14 +324,6 @@
                 }
             }
         });
-
-        Object.entries(teleportElements.value)
-            .forEach(([scope, element]) => {
-                if (!foundScopes.has(scope) || !document.body.contains(element)) {
-                    element.removeEventListener('click', onClickLabelHandler);
-                    delete teleportElements.value[scope];
-                }
-            });
     }
 
     async function fetchMultipleProjectLabels() {
