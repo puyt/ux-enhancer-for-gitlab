@@ -266,7 +266,13 @@
         await fetchMultipleProjectLabels();
 
         setTimeout(() => {
-            deboundedInjectTeleports();
+            const header =
+                document.querySelector('#js-right-sidebar-portal .gl-drawer-header') ||
+                document.querySelector('aside.work-item-drawer .gl-drawer-header');
+
+            if (header) {
+                deboundedInjectTeleports();
+            }
         }, 400);
     }
 
@@ -332,7 +338,7 @@
             await getProjectLabels(props.currentProjectPath);
         }
 
-        if (window.location.href.includes('/-/boards')) {
+        if (isIssueBoard.value || isIssuesList.value) {
             document.body.addEventListener('mouseup', onClickDocumentHandler);
         } else {
             on(MittEventKey.BROWSER_REQUEST_COMPLETED, deboundedInjectTeleports);
