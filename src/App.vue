@@ -95,6 +95,10 @@
     const isMergeRequestPage = computed(() => !!location.value.pathname?.includes('merge_requests'));
     const isIssuePage = computed(() => !!location.value.pathname?.includes('issues'));
     const isIssueBoardPage = computed(() => !!location.value.pathname?.includes('boards'));
+    const isIssuesListPage = computed(() => {
+        const { pathname } = location.value;
+        return !!pathname?.includes('/-/issues') && !pathname?.match(/\/-\/(?:issues|work_items)\/\d+/);
+    });
     const isTodoListPage = computed(() => !!location.value.pathname?.includes('dashboard/todos'));
 
     const projectPath = computed(() => {
@@ -110,7 +114,11 @@
         return match?.length === 2 ? parseInt(match[1], 10) : 0;
     });
 
-    const isScopedLabelsDropdownEnabled = computed(() => getSetting(Preference.GENERAL_SCOPED_LABELS_DROPDOWN, true) && csrfToken && (isIssueBoardPage.value || (IID.value && (isMergeRequestPage.value || isIssuePage.value))));
+    const isScopedLabelsDropdownEnabled = computed(() => getSetting(Preference.GENERAL_SCOPED_LABELS_DROPDOWN, true)
+        && csrfToken
+        && (isIssueBoardPage.value
+            || isIssuesListPage.value
+            || (IID.value && (isMergeRequestPage.value || isIssuePage.value))));
     const isStarIssueBoardsEnabled = computed(() => getSetting(Preference.ISSUE_STAR_BOARDS, true) && isIssueBoardPage.value);
 
     onMounted(async () => {
