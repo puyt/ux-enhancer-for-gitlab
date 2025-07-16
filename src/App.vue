@@ -116,8 +116,8 @@
 
     const isScopedLabelsDropdownEnabled = computed(() => getSetting(Preference.GENERAL_SCOPED_LABELS_DROPDOWN, true)
         && csrfToken
-        && (isIssueBoardPage.value
-            || (IID.value && (isMergeRequestPage.value || isIssuesListPage.value || isIssuePage.value))));
+        && (isIssueBoardPage.value || isIssuesListPage.value
+            || (IID.value && (isMergeRequestPage.value || isIssuePage.value))));
     const isStarIssueBoardsEnabled = computed(() => getSetting(Preference.ISSUE_STAR_BOARDS, true) && isIssueBoardPage.value);
 
     onMounted(async () => {
