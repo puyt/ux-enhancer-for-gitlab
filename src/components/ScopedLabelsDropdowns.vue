@@ -191,12 +191,39 @@
             return;
         }
 
+        const scopePrefix = label.split('::')[0];
+
+        let removeLabel = '';
+        const labelsWrapperElement = document.querySelector('div.labels-select-wrapper, section.js-labels.work-item-attributes-item, section[data-testid="work-item-labels"]');
+
+        if (labelsWrapperElement) {
+            labelsWrapperElement.querySelectorAll('span.gl-label')
+                .forEach((element) => {
+                    let labelName = element.getAttribute('data-qa-label-name') || element.getAttribute('data-testid') || '';
+
+                    if (!labelName) {
+                        const prefix = element.querySelector('span.gl-label-text')?.textContent?.trim() || '';
+                        const suffix = element.querySelector('span.gl-label-text-scoped')?.textContent?.trim();
+                        labelName = suffix ? `${prefix}::${suffix}` : prefix;
+                    }
+
+                    if (labelName.includes('::') && labelName.split('::')[0] === scopePrefix && labelName !== label) {
+                        removeLabel = labelName;
+                    }
+                });
+        }
+
+        const payload: Record<string, unknown> = { add_labels: [label] };
+
+        if (removeLabel) {
+            payload.remove_labels = [removeLabel];
+        }
+
         useFetch(`/api/v4/projects/${encodeURIComponent(selectedProjectPath.value)}/issues/${iid.value}`, {
             headers: { 'X-CSRF-TOKEN': props.csrfToken },
         })
-            .put({ add_labels: [label] })
+            .put(payload)
             .then(async () => {
-                const scopePrefix = label.split('::')[0];
                 delete teleportElements.value[scopePrefix];
             });
     }
