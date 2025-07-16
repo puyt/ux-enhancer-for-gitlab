@@ -11,9 +11,6 @@ module.exports = {
     parserOptions: {
         ecmaVersion: 'latest',
     },
-    globals: {
-        chrome: 'readonly',
-    },
     rules: {
         'vue/multi-word-component-names': 0,
     },
