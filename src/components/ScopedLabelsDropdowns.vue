@@ -196,6 +196,9 @@
         if (labelsWrapperElement) {
             labelsWrapperElement.querySelectorAll('span.gl-label')
                 .forEach((element) => {
+                    if ((element as HTMLElement).closest('.dropdown-menu')) {
+                        return;
+                    }
                     let labelName = element.getAttribute('data-qa-label-name') || element.getAttribute('data-testid') || '';
 
                     if (!labelName) {
@@ -232,6 +235,9 @@
 
         document.querySelectorAll('div.labels-select-wrapper span.gl-label, section.js-labels.work-item-attributes-item span.gl-label, section[data-testid="work-item-labels"] span.gl-label')
             .forEach((element) => {
+                if ((element as HTMLElement).closest('.dropdown-menu')) {
+                    return;
+                }
                 const spanElement = element as HTMLSpanElement;
                 spanElement.style.zIndex = 'initial';
             });
@@ -286,7 +292,12 @@
 
         const labelElements = labelsWrapperElement.querySelectorAll('span.gl-label');
 
+        const foundScopes = new Set<string>();
+
         labelElements.forEach((element) => {
+            if (element.closest('.dropdown-menu')) {
+                return;
+            }
             let labelName = element.getAttribute('data-qa-label-name') || element.getAttribute('data-testid') || '';
             if (!labelName) {
                 const prefix = element.querySelector('span.gl-label-text')?.textContent?.trim() || '';
@@ -299,6 +310,8 @@
             }
 
             const scopePrefix = labelName.split('::')[0];
+
+            foundScopes.add(scopePrefix);
 
             if (!scopePrefix) {
                 return;
@@ -322,6 +335,14 @@
                 }
             }
         });
+
+        Object.entries(teleportElements.value)
+            .forEach(([scope, element]) => {
+                if (!foundScopes.has(scope) || !document.body.contains(element)) {
+                    element.removeEventListener('click', onClickLabelHandler);
+                    delete teleportElements.value[scope];
+                }
+            });
     }
 
     async function fetchMultipleProjectLabels() {
