@@ -137,13 +137,10 @@
         }
 
         if (isIssuesList.value) {
-            const activeRow = document.querySelector('li.issuable-row.is-active, li.issuable-row.is-focused, li.issuable-row.gl-active, li.issue.is-active, li.issue.gl-active') as HTMLElement | null;
-            const iidAttr = activeRow?.getAttribute('data-item-iid')
-                || activeRow?.getAttribute('data-issue-iid')
-                || activeRow?.getAttribute('data-work-item-iid')
-                || activeRow?.getAttribute('data-iid')
-                || activeRow?.getAttribute('data-id');
-            return parseInt(iidAttr || '0', 10);
+            const activeRow = document.querySelector('li.issue.\\!gl-bg-feedback-info') as HTMLElement | null;
+            const href = activeRow?.querySelector('a[data-testid="issuable-title-link"]')?.getAttribute('href');
+            const iid = href?.split('/').pop();
+            return parseInt(iid || '0', 10);
         }
 
         return 0;
