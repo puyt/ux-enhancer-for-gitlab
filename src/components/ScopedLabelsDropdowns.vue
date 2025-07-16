@@ -308,9 +308,15 @@
 
             const teleportElement = element.querySelector('span.gl-label-text-scoped')
                 || element.querySelector('span.gl-label-text');
-            if (teleportElement && !teleportElements.value[scopePrefix]) {
-                teleportElements.value[scopePrefix] = teleportElement as HTMLElement;
-                teleportElement.addEventListener('click', onClickLabelHandler);
+            if (teleportElement) {
+                const existingElement = teleportElements.value[scopePrefix];
+
+                if (existingElement !== teleportElement) {
+                    existingElement?.removeEventListener('click', onClickLabelHandler);
+
+                    teleportElements.value[scopePrefix] = teleportElement as HTMLElement;
+                    teleportElement.addEventListener('click', onClickLabelHandler);
+                }
             }
         });
     }
