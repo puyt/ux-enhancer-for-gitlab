@@ -15,43 +15,56 @@
                 class="show-on-focus-or-hover--context gl-new-dropdown-item"
                 tabindex="0"
             >
-                <a
-                    class="gl-new-dropdown-item-content"
-                    :href="board.href"
-                    style="height: 48px;"
-                >
-                    <span class="gl-new-dropdown-item-text-wrapper">
-                        <div
-                            class="gl-gap-3"
-                            style="display: flex; align-items: center;"
+                <div style="display: flex; align-items: center; width: 100%;">
+                        <a
+                            class="gl-new-dropdown-item-content"
+                            :href="board.href"
+                            style="height: 48px; flex: 1; display: flex; align-items: center; justify-content: space-between;"
                         >
-                            <template v-if="projectInfo?.[board.projectPath]">
-                                <img
-                                    v-if="projectInfo[board.projectPath].avatar_url"
-                                    class="gl-avatar gl-avatar-s24"
-                                    :src="projectInfo[board.projectPath].avatar_url"
-                                >
+                            <span class="gl-new-dropdown-item-text-wrapper" style="flex: 1;">
                                 <div
-                                    v-else
-                                    class="gl-avatar gl-avatar-s24 gl-align-self-start gl-flex-shrink-0 gl-avatar-identicon gl-avatar-identicon-bg6"
+                                    class="gl-gap-3"
+                                    style="display: flex; align-items: center;"
                                 >
-                                    {{ projectInfo[board.projectPath].name.charAt(0) }}
-                                </div>
-                            </template>
+                                    <template v-if="projectInfo?.[board.projectPath]">
+                                        <img
+                                            v-if="projectInfo[board.projectPath].avatar_url"
+                                            class="gl-avatar gl-avatar-s24"
+                                            :src="projectInfo[board.projectPath].avatar_url"
+                                        >
+                                        <div
+                                            v-else
+                                            class="gl-avatar gl-avatar-s24 gl-align-self-start gl-flex-shrink-0 gl-avatar-identicon gl-avatar-identicon-bg6"
+                                        >
+                                            {{ projectInfo[board.projectPath].name.charAt(0) }}
+                                        </div>
+                                    </template>
 
-                            <div class="gl-flex-grow-1 gl-flex-shrink-1 gl-truncate-end">
-                                {{ board.label }}
+                                    <div class="gl-flex-grow-1 gl-flex-shrink-1 gl-truncate-end">
+                                        {{ board.label }}
 
-                                <div
-                                    v-if="projectInfo?.[board.projectPath]"
-                                    class="gl-font-sm gl-text-gray-500 gl-text-truncate"
-                                >
-                                    {{ projectInfo[board.projectPath]?.name_with_namespace || '' }}
+                                        <div
+                                            v-if="projectInfo?.[board.projectPath]"
+                                            class="gl-font-sm gl-text-gray-500 gl-text-truncate"
+                                        >
+                                            {{ projectInfo[board.projectPath]?.name_with_namespace || '' }}
+                                        </div>
+                                    </div>
                                 </div>
+                            </span>
+                            <div
+                                class="gl-ml-2 gl-button gl-button-icon has-tooltip"
+                                style="background: none; border: none; cursor: pointer; color: #d9534f; display: flex; align-items: center;"
+                                title="Unstar board"
+                                @click.stop.prevent="unstarBoard(boardId)"
+                            >
+                                <SvgIcon
+                                    :path="gSvgTrash"
+                                    :is-gitlab="true"
+                                />
                             </div>
-                        </div>
-                    </span>
-                </a>
+                        </a>
+                </div>
             </li>
         </template>
     </ul>
@@ -61,16 +74,18 @@
     lang="ts"
     setup
 >
-    import {
-        computed,
-        ref,
-        watch,
-    } from 'vue';
-    import {
-        useFetch,
-        useLocalStorage,
-    } from '@vueuse/core';
-    import { debounce } from 'lodash-es';
+        import {
+            useFetch,
+            useLocalStorage,
+        } from '@vueuse/core';
+        import {
+            computed,
+            ref,
+            watch,
+        } from 'vue';
+        import { debounce } from 'lodash-es';
+        import SvgIcon from './SvgIcon.vue';
+        import { gSvgTrash } from '../assets/icons';
 
     interface Props {
         match?: string,
@@ -79,6 +94,12 @@
     const { match = '' } = defineProps<Props>();
 
     const starredBoards = useLocalStorage('glab-enhancer-browser-extension/starred-boards', ref(new Map()));
+
+    function unstarBoard(boardId: string) {
+        if (starredBoards.value.has(boardId)) {
+            starredBoards.value.delete(boardId);
+        }
+    }
 
     const filteredBoards = computed(() => {
         const newMap = new Map();
