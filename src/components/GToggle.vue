@@ -22,18 +22,12 @@
     setup
 >
     import { mdiCheck } from '@mdi/js';
-    import { toRefs } from 'vue';
 
     interface Props {
         modelValue: boolean,
     }
 
-    const props = withDefaults(defineProps<Props>(), {
-        modelValue: false,
-    });
-    const {
-        modelValue,
-    } = toRefs(props);
+    const { modelValue = false } = defineProps<Props>();
 
     const emit = defineEmits<{
         'update:model-value': [value: boolean]

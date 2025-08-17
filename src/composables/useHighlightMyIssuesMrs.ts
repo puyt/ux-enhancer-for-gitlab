@@ -1,10 +1,18 @@
 import { debounce } from 'lodash-es';
 import { useExtensionStore } from '../store';
 import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { Preference } from '../enums';
+import { usePageDetectionStore } from '../stores';
 
 export function useHighlightMyIssuesMrs() {
     const { getSetting } = useExtensionStore();
+    const {
+        isBoardPage,
+        isIssuePage,
+        isMergeRequestPage,
+        isProjectPage,
+    } = storeToRefs(usePageDetectionStore());
 
     const isHighlightMyIssueEnabled = computed(() => !!getSetting(Preference.ISSUE_HIGHLIGHT_MINE, true));
     const isHighlightMyMrEnabled = computed(() => !!getSetting(Preference.MR_HIGHLIGHT_MINE, true));
@@ -15,7 +23,7 @@ export function useHighlightMyIssuesMrs() {
         }
 
         if (isHighlightMyIssueEnabled.value) {
-            if (window.location.href.includes('boards')) {
+            if (isBoardPage.value) {
                 const cardElements = document.querySelectorAll(`.board-card a[href="/${username}"]`);
                 cardElements.forEach((element) => {
                     const parentElement = element.closest('li.board-card') as HTMLElement | null;
@@ -26,7 +34,7 @@ export function useHighlightMyIssuesMrs() {
                 });
             }
 
-            if (window.location.href.includes('issues') && !window.location.href.includes('dashboard')) {
+            if (isIssuePage.value && isProjectPage.value) {
                 const avatarElements = document.querySelectorAll(`.issuable-meta a.gl-avatar-link[href$="/${username}"]`);
                 avatarElements.forEach((element) => {
                     const parentElement = element.closest('li.issue') as HTMLElement | null;
@@ -40,7 +48,7 @@ export function useHighlightMyIssuesMrs() {
             }
         }
 
-        if (isHighlightMyMrEnabled.value && window.location.href.includes('merge_requests') && !window.location.href.includes('dashboard')) {
+        if (isHighlightMyMrEnabled.value && isMergeRequestPage.value && isProjectPage.value) {
             const avatarElements = document.querySelectorAll(`.issuable-info-container li:not(.issuable-reviewers) a.author-link[href$="/${username}"]`);
             avatarElements.forEach((element) => {
                 const parentElement = element.closest('li.merge-request') as HTMLElement | null;

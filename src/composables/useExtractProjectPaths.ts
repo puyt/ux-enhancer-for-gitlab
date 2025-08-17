@@ -1,4 +1,14 @@
+import { storeToRefs } from 'pinia';
+import { usePageDetectionStore } from '../stores';
+
 export function useExtractProjectPaths() {
+    const {
+        isTodoPage,
+        isIssuePage,
+        isBoardPage,
+        isMergeRequestPage,
+    } = storeToRefs(usePageDetectionStore());
+
     function extractViaTodosPage() {
         const paths: string[] = [];
 
@@ -73,22 +83,18 @@ export function useExtractProjectPaths() {
     }
 
     function extract() {
-        if (window.location.href.includes('todos')) {
+        if (isTodoPage.value) {
             return extractViaTodosPage();
         }
-
-        if (window.location.href.includes('issues')) {
+        if (isIssuePage.value) {
             return extractViaIssuesPage();
         }
-
-        if (window.location.href.includes('boards')) {
+        if (isBoardPage.value) {
             return extractViaIssueBoardPage();
         }
-
-        if (window.location.href.includes('merge_requests')) {
+        if (isMergeRequestPage.value) {
             return extractViaMergeRequestsPage();
         }
-
         return [];
     }
 

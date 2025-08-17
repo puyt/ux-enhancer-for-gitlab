@@ -73,12 +73,10 @@
     import { debounce } from 'lodash-es';
 
     interface Props {
-        match: string,
+        match?: string,
     }
 
-    const props = withDefaults(defineProps<Props>(), {
-        match: '',
-    });
+    const { match = '' } = defineProps<Props>();
 
     const starredBoards = useLocalStorage('glab-enhancer-browser-extension/starred-boards', ref(new Map()));
 
@@ -86,8 +84,8 @@
         const newMap = new Map();
 
         starredBoards.value.forEach((data, boardId) => {
-            if (!props.match || data.label.toLowerCase()
-                .includes(props.match.toLowerCase())) {
+            if (!match || data.label.toLowerCase()
+                .includes(match.toLowerCase())) {
                 newMap.set(boardId, {
                     ...data,
                     href: `${data.pathname.split('boards/')[0]}/boards/${boardId.split('listbox-item-')[1]}`,

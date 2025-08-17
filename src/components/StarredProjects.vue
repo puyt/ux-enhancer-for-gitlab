@@ -110,7 +110,6 @@
         onMounted,
         type Ref,
         ref,
-        toRefs,
         watch,
     } from 'vue';
     import { useFetch } from '@vueuse/core';
@@ -127,18 +126,14 @@
     import { Preference } from '../enums';
 
     interface Props {
-        gitlabUserId: number,
-        match: string,
+        gitlabUserId?: number,
+        match?: string,
     }
 
-    const props = withDefaults(defineProps<Props>(), {
-        gitlabUserId: 0,
-        match: '',
-    });
     const {
-        gitlabUserId,
-        match,
-    } = toRefs(props);
+        gitlabUserId = 0,
+        match = '',
+    } = defineProps<Props>();
 
     const {
         getSetting,
@@ -154,13 +149,13 @@
             return;
         }
 
-        const { data } = await useFetch(`/api/v4/users/${gitlabUserId.value}/starred_projects`)
+        const { data } = await useFetch(`/api/v4/users/${gitlabUserId}/starred_projects`)
             .json();
 
         projects.value = data.value;
-        if (match.value !== '') {
+        if (match !== '') {
             projects.value = projects.value.filter((project) => project.name_with_namespace.toLowerCase()
-                .includes(match.value.toLowerCase()));
+                .includes(match.toLowerCase()));
         }
 
         projects.value.forEach((project) => {

@@ -3,18 +3,21 @@ import {
     computed,
     onMounted,
 } from 'vue';
+import { storeToRefs } from 'pinia';
 import { Preference } from '../enums';
+import { usePageDetectionStore } from '../stores';
 
 export function useThreadsByDefault() {
     const { getSetting } = useExtensionStore();
+    const { isIssuePage, isMergeRequestPage } = storeToRefs(usePageDetectionStore());
 
     const isUseThreadIssueEnabled = computed(() => !!getSetting(Preference.ISSUE_USE_THREADS_BY_DEFAULT, true));
-    if (window.location.href.includes('issues') && !isUseThreadIssueEnabled.value) {
+    if (isIssuePage.value && !isUseThreadIssueEnabled.value) {
         return;
     }
 
     const isUseThreadMrEnabled = computed(() => !!getSetting(Preference.MR_USE_THREADS_BY_DEFAULT, true));
-    if (window.location.href.includes('merge_requests') && !isUseThreadMrEnabled.value) {
+    if (isMergeRequestPage.value && !isUseThreadMrEnabled.value) {
         return;
     }
 

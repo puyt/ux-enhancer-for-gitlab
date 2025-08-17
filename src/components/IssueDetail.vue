@@ -249,7 +249,6 @@
         ref,
         shallowRef,
         type ShallowRef,
-        toRefs,
     } from 'vue';
     import {
         gSvgChecronDown,
@@ -271,18 +270,14 @@
     import { Preference } from '../enums';
 
     interface Props {
-        iid: number,
-        currentProjectPath: string,
+        iid?: number,
+        currentProjectPath?: string,
     }
 
-    const props = withDefaults(defineProps<Props>(), {
-        iid: 0,
-        currentProjectPath: '',
-    });
     const {
-        iid,
-        currentProjectPath,
-    } = toRefs(props);
+        iid = 0,
+        currentProjectPath = '',
+    } = defineProps<Props>();
 
     useThreadsByDefault();
 
@@ -405,11 +400,11 @@
     const debouncedRender = debounce(render, 400);
 
     async function fetchIssue() {
-        if (!iid.value) {
+        if (!iid) {
             return;
         }
 
-        const { data } = await useFetch(`/api/v4/projects/${encodeURIComponent(currentProjectPath.value)}/issues/${iid.value}?is_custom=1`)
+        const { data } = await useFetch(`/api/v4/projects/${encodeURIComponent(currentProjectPath)}/issues/${iid}?is_custom=1`)
             .json();
         issue.value = data?.value || null as GitlabIssue | null;
 
@@ -417,11 +412,11 @@
     }
 
     async function fetchIssueDiscussions() {
-        if (!iid.value) {
+        if (!iid) {
             return;
         }
 
-        const { data } = await useFetchPaging(`/api/v4/projects/${encodeURIComponent(currentProjectPath.value)}/issues/${iid.value}/discussions`);
+        const { data } = await useFetchPaging(`/api/v4/projects/${encodeURIComponent(currentProjectPath)}/issues/${iid}/discussions`);
         discussions.value = data?.value || [] as GitLabDiscussion[];
     }
 

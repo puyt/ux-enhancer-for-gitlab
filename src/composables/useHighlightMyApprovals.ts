@@ -4,11 +4,15 @@ import {
     useFetch,
     watchDebounced,
 } from '@vueuse/core';
+import { storeToRefs } from 'pinia';
 import { useExtensionStore } from '../store';
 import { Preference } from '../enums';
+import { usePageDetectionStore } from '../stores';
 
 export function useHighlightMyApprovals(gitlabUserId: number) {
-    if (!gitlabUserId || !window.location.href.includes('merge_requests')) {
+    const { isMergeRequestPage } = storeToRefs(usePageDetectionStore());
+
+    if (!gitlabUserId || !isMergeRequestPage.value) {
         return;
     }
 

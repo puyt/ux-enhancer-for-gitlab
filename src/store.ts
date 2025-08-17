@@ -18,7 +18,7 @@ import { APP_NAMESPACE } from './constants';
 
 type SettingValue = boolean | string | number | null;
 
-export const useExtensionStore = defineStore('resize', () => {
+export const useExtensionStore = defineStore(`${APP_NAMESPACE}/app`, () => {
         const gitlabUserId: Ref<number> = ref<number>(0);
         const gitlabUsername: Ref<string> = ref<string>('');
         const gitlabVersion: Ref<string | null> = ref<string | null>(null);

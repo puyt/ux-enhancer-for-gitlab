@@ -1,7 +1,9 @@
 import { debounce } from 'lodash-es';
 import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { Preference } from '../enums';
 import { useExtensionStore } from '../store';
+import { usePageDetectionStore } from '../stores';
 import { useExtractProjectPaths } from './useExtractProjectPaths';
 
 export function useRenderProjectAvatarIssues() {
@@ -11,6 +13,14 @@ export function useRenderProjectAvatarIssues() {
     } = useExtensionStore();
 
     const { extract: extractProjectPaths } = useExtractProjectPaths();
+    const {
+        isTodoPage,
+        isIssuePage,
+        isBoardPage,
+        isMergeRequestPage,
+        isGroupPage,
+        isProjectPage,
+    } = storeToRefs(usePageDetectionStore());
 
     const projectAvatars = {};
 
@@ -24,7 +34,7 @@ export function useRenderProjectAvatarIssues() {
             return;
         }
 
-        if (isInjectAvatarTodoEnabled.value && window.location.href.includes('todos')) {
+        if (isInjectAvatarTodoEnabled.value && isTodoPage.value) {
             let targetElements = document.querySelectorAll(`ul.todos-list a.todo-target-link[href*="${projectPath}"]`);
             if (targetElements.length === 0) {
                 targetElements = document.querySelectorAll(`ol[data-testid="todo-item-list"] li > a.gl-link[href*="${projectPath}"]`);
@@ -68,7 +78,7 @@ export function useRenderProjectAvatarIssues() {
         }
 
         if (isInjectAvatarIssueEnabled.value) {
-            if (window.location.href.includes('issues')) {
+            if (isIssuePage.value) {
                 const targetElements = document.querySelectorAll(`li.issue a.issue-title-text[href*="${projectPath}"]`);
                 targetElements.forEach((targetElement) => {
                     const parentElement = targetElement?.parentElement?.parentElement?.parentElement || null;
@@ -92,7 +102,7 @@ export function useRenderProjectAvatarIssues() {
                 });
             }
 
-            if (window.location.href.includes('boards') && avatarUrl.includes('http')) {
+            if (isBoardPage.value && avatarUrl.includes('http')) {
                 const targetElements = document.querySelectorAll(`li.board-card span[title="${projectPath}"]`);
                 targetElements.forEach((targetElement) => {
                     if (targetElement.parentElement && targetElement.previousElementSibling) {
@@ -109,7 +119,7 @@ export function useRenderProjectAvatarIssues() {
             }
         }
 
-        if (isInjectAvatarMergeRequestEnabled.value && (window.location.href.includes('merge_requests') && (window.location.href.includes('groups') || window.location.href.includes('dashboard')))) {
+        if (isInjectAvatarMergeRequestEnabled.value && (isMergeRequestPage.value && (isGroupPage.value || isProjectPage.value))) {
             const targetElements = document.querySelectorAll(`.issuable-list .merge-request-title-text a[href*="${projectPath}"], .issuable-list .issue-title a[href*="${projectPath}"]`);
 
             targetElements.forEach((targetElement) => {

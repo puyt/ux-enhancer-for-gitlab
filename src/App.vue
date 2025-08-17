@@ -5,32 +5,32 @@
         <CommandPanelEnhancer />
 
         <IssueDetail
-            v-if="isIssuePage && IID"
+            v-if="isIssuePage && iid"
             :current-project-path="projectPath"
-            :iid="IID"
+            :iid="iid"
         />
 
         <MyUnresolvedThreads
-            v-if="isMrIssueOverviewReady && !IID"
+            v-if="isMrIssueOverviewReady && !iid"
             :current-project-path="projectPath"
             :is-merge-request="isMergeRequestPage"
         />
 
         <MergeRequestDetail
-            v-if="isMergeRequestPage && IID"
+            v-if="isMergeRequestPage && iid"
 
             :csrf-token="csrfToken"
             :current-project-path="projectPath"
-            :iid="IID"
+            :iid="iid"
         />
 
-        <TodoList v-if="isTodoListPage" />
+        <TodoList v-if="isTodoPage" />
 
         <ScopedLabelsDropdowns
             v-if="isScopedLabelsDropdownEnabled"
             :csrf-token="csrfToken"
             :current-project-path="!isGroupPage ? projectPath : ''"
-            :iid="IID"
+            :iid="iid"
         />
 
         <StarIssueBoards v-if="isStarIssueBoardsEnabled" />
@@ -41,7 +41,6 @@
     lang="ts"
     setup
 >
-    import { useBrowserLocation } from '@vueuse/core';
     import { storeToRefs } from 'pinia';
     import {
         computed,
@@ -69,16 +68,27 @@
         Preference,
     } from './enums';
     import { useExtensionStore } from './store';
+    import { usePageDetectionStore } from './stores';
 
     const { emit } = useMitt();
 
+    const { getSetting } = useExtensionStore();
     const {
         gitlabUserId,
         gitlabUsername,
         isReady,
     } = storeToRefs(useExtensionStore());
 
-    const { getSetting } = useExtensionStore();
+    const pageDetectionStore = usePageDetectionStore();
+    const {
+        projectPath,
+        iid,
+        isIssuePage,
+        isMergeRequestPage,
+        isBoardPage,
+        isTodoPage,
+        isGroupPage,
+    } = storeToRefs(pageDetectionStore);
 
     usePersistentFilters();
     const { render: renderProjectAvatars } = useRenderProjectAvatarIssues();
@@ -89,29 +99,8 @@
     const csrfToken = ref('');
     const isMrIssueOverviewReady = ref(false);
 
-    const location = useBrowserLocation();
-
-    const isGroupPage = computed(() => !!location.value.pathname?.includes('groups'));
-    const isMergeRequestPage = computed(() => !!location.value.pathname?.includes('merge_requests'));
-    const isIssuePage = computed(() => !!location.value.pathname?.includes('issues'));
-    const isIssueBoardPage = computed(() => !!location.value.pathname?.includes('boards'));
-    const isTodoListPage = computed(() => !!location.value.pathname?.includes('dashboard/todos'));
-
-    const projectPath = computed(() => {
-        return location.value?.pathname?.split('/-/')?.[0].slice(1) || '';
-    });
-    const IID = computed(() => {
-        if (!location.value?.pathname || isIssueBoardPage.value) {
-            return 0;
-        }
-
-        const regexPattern = /\/(\d+)\/?.*$/;
-        const match = regexPattern.exec(location.value.pathname);
-        return match?.length === 2 ? parseInt(match[1], 10) : 0;
-    });
-
-    const isScopedLabelsDropdownEnabled = computed(() => getSetting(Preference.GENERAL_SCOPED_LABELS_DROPDOWN, true) && csrfToken && (isIssueBoardPage.value || (IID.value && (isMergeRequestPage.value || isIssuePage.value))));
-    const isStarIssueBoardsEnabled = computed(() => getSetting(Preference.ISSUE_STAR_BOARDS, true) && isIssueBoardPage.value);
+    const isScopedLabelsDropdownEnabled = computed(() => getSetting(Preference.GENERAL_SCOPED_LABELS_DROPDOWN, true) && csrfToken.value && (isBoardPage.value || (iid.value && (isMergeRequestPage.value || isIssuePage.value))));
+    const isStarIssueBoardsEnabled = computed(() => getSetting(Preference.ISSUE_STAR_BOARDS, true) && isBoardPage.value);
 
     onMounted(async () => {
         const csrfTokenMetaTag = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement;

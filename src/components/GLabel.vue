@@ -39,7 +39,5 @@
         isSmall?: boolean,
     }
 
-    withDefaults(defineProps<Props>(), {
-        isSmall: true,
-    });
+    const { isSmall = true } = defineProps<Props>();
 </script>

@@ -17,6 +17,8 @@ export function usePersistentFilters() {
         return;
     }
 
+    const location = useBrowserLocation();
+
     const validPaths = [
         '/dashboard/issues',
         '/dashboard/merge_requests',
@@ -33,17 +35,14 @@ export function usePersistentFilters() {
     const persistentFilters = useLocalStorage('glab-enhancer-browser-extension/persistent-filters', ref(new Map()));
 
     const isDashboardIssues = computed(() => {
-        const location = useBrowserLocation();
         return location.value.pathname === '/dashboard/issues';
     });
 
     const isDashboardMergeRequests = computed(() => {
-        const location = useBrowserLocation();
         return location.value.pathname === '/dashboard/merge_requests';
     });
 
     function getCurrentPathname(): string {
-        const location = useBrowserLocation();
         let pathname = location.value.pathname?.replace(/\/$/, '') || '';
 
         if (!isValidPath(pathname)) {
@@ -105,7 +104,6 @@ export function usePersistentFilters() {
         const search = persistentFilters.value.get(pathname) || '';
         const cachedSearch = sortQueryParams(search, removeSearchKeys);
 
-        const location = useBrowserLocation();
         const currentSearch = sortQueryParams(location.value.search as string, removeSearchKeys);
 
         if (currentSearch || !cachedSearch || cachedSearch === currentSearch) {
@@ -147,7 +145,6 @@ export function usePersistentFilters() {
             removeSearchKeys.push('assignee_username', 'reviewer_username');
         }
 
-        const location = useBrowserLocation();
         const sortedSearch = sortQueryParams(location.value.search as string, removeSearchKeys);
 
         persistentFilters.value.set(pathname, sortedSearch ? ((isDashboardMergeRequests.value || isDashboardIssues.value ? '&' : '?') + sortedSearch) : '');

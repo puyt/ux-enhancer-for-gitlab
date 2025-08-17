@@ -32,10 +32,10 @@
         type Ref,
         ref,
     } from 'vue';
-    import StarredProjects from './StarredProjects.vue';
+    import { Preference } from '../enums';
     import { useExtensionStore } from '../store';
     import StarredBoards from './StarredBoards.vue';
-    import { Preference } from '../enums';
+    import StarredProjects from './StarredProjects.vue';
 
     const {
         gitlabUserId,

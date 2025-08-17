@@ -65,25 +65,33 @@
         type Ref,
         ref,
     } from 'vue';
+    import { storeToRefs } from 'pinia';
     import { useExtractProjectPaths } from '../composables/useExtractProjectPaths';
     import { useMitt } from '../composables/useMitt';
+    import { usePageDetectionStore } from '../stores';
     import { MittEventKey } from '../enums';
     import { useExtensionStore } from '../store';
     import GLabel from './GLabel.vue';
     import SvgIcon from './SvgIcon.vue';
 
     interface Props {
-        currentProjectPath: string,
-        csrfToken: string,
-        iid: number,
+        currentProjectPath?: string,
+        csrfToken?: string,
+        iid?: number,
     }
 
-    const props = defineProps<Props>();
+    const {
+        currentProjectPath = '',
+        csrfToken = '',
+        iid = 0,
+    } = defineProps<Props>();
 
     const {
         getProjectLabels,
         getProjectScopedLabels,
     } = useExtensionStore();
+
+    const { isBoardPage } = storeToRefs(usePageDetectionStore());
 
     const { extract: extractProjectPaths } = useExtractProjectPaths();
 
@@ -96,13 +104,12 @@
     const selectedScope = ref('');
     const offsetLeft = ref('0');
 
-    const isIssueBoard = computed(() => window.location.href.includes('/-/boards'));
-    const iid = computed(() => {
-        if (props.iid) {
-            return props.iid;
+    const selectedIid = computed(() => {
+        if (iid) {
+            return iid;
         }
 
-        if (isIssueBoard.value) {
+        if (isBoardPage.value) {
             return parseInt(document.querySelector('li.board-card.is-active')
                 ?.getAttribute('data-item-iid') || '0');
         }
@@ -111,11 +118,11 @@
     });
 
     const selectedProjectPath = computed(() => {
-        if (props.currentProjectPath) {
-            return props.currentProjectPath;
+        if (currentProjectPath) {
+            return currentProjectPath;
         }
 
-        if (isIssueBoard.value) {
+        if (isBoardPage.value) {
             return document.querySelector('li.board-card.is-active')
                 ?.getAttribute('data-item-path')
                 ?.split('#')?.[0] || '';
@@ -125,12 +132,12 @@
     });
 
     function updateIssueLabel(label: string) {
-        if (!iid.value || !selectedProjectPath.value) {
+        if (!selectedIid.value || !selectedProjectPath.value) {
             return;
         }
 
-        useFetch(`/api/v4/projects/${encodeURIComponent(selectedProjectPath.value)}/issues/${iid.value}`, {
-            headers: { 'X-CSRF-TOKEN': props.csrfToken },
+        useFetch(`/api/v4/projects/${encodeURIComponent(selectedProjectPath.value)}/issues/${selectedIid.value}`, {
+            headers: { 'X-CSRF-TOKEN': csrfToken },
         })
             .put({ add_labels: [label] })
             .then(async () => {
@@ -173,7 +180,7 @@
     }
 
     function injectTeleports() {
-        if (!iid.value || !document.querySelector('div.labels-select-wrapper .shortcut-sidebar-dropdown-toggle, section.js-labels.work-item-attributes-item .shortcut-sidebar-dropdown-toggle')) {
+        if (!selectedIid.value || !document.querySelector('div.labels-select-wrapper .shortcut-sidebar-dropdown-toggle, section.js-labels.work-item-attributes-item .shortcut-sidebar-dropdown-toggle')) {
             return;
         }
 
@@ -215,15 +222,15 @@
 
     const deboundedInjectTeleports = debounce(injectTeleports, 400);
     onMounted(async () => {
-        if (!props.currentProjectPath) {
+        if (!currentProjectPath) {
             setTimeout(() => {
                 fetchMultipleProjectLabels();
             }, 600);
         } else {
-            await getProjectLabels(props.currentProjectPath);
+            await getProjectLabels(currentProjectPath);
         }
 
-        if (window.location.href.includes('/-/boards')) {
+        if (isBoardPage.value) {
             document.body.addEventListener('mouseup', onClickDocumentHandler);
         } else {
             on(MittEventKey.BROWSER_REQUEST_COMPLETED, deboundedInjectTeleports);

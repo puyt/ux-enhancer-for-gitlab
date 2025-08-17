@@ -104,7 +104,6 @@
         ref,
         type ShallowRef,
         shallowRef,
-        toRefs,
     } from 'vue';
     import type { GitLabDiscussion } from '../types';
     import { debounce } from 'lodash-es';
@@ -124,21 +123,16 @@
     import { Preference } from '../enums';
 
     interface Props {
-        iid: number,
-        currentProjectPath: string,
-        csrfToken: string,
+        iid?: number,
+        currentProjectPath?: string,
+        csrfToken?: string,
     }
 
-    const props = withDefaults(defineProps<Props>(), {
-        iid: 0,
-        currentProjectPath: '',
-        csrfToken: '',
-    });
     const {
-        iid,
-        currentProjectPath,
-        csrfToken,
-    } = toRefs(props);
+        iid = 0,
+        currentProjectPath = '',
+        csrfToken = '',
+    } = defineProps<Props>();
 
     useThreadsByDefault();
 
@@ -154,11 +148,11 @@
     const isShowMyUnresolvedEnabled = computed(() => !!getSetting(Preference.MR_SHOW_MY_UNRESOLVED_THREADS, true));
 
     async function fetchMrDiscussions() {
-        if (!iid.value || !isShowMyUnresolvedEnabled.value) {
+        if (!iid || !isShowMyUnresolvedEnabled.value) {
             return;
         }
 
-        const { data } = await useFetchPaging(`/api/v4/projects/${encodeURIComponent(currentProjectPath.value)}/merge_requests/${iid.value}/discussions`);
+        const { data } = await useFetchPaging(`/api/v4/projects/${encodeURIComponent(currentProjectPath)}/merge_requests/${iid}/discussions`);
         discussions.value = data?.value || [] as GitLabDiscussion[];
 
         render();
@@ -214,11 +208,11 @@
     }
 
     async function fetchMR() {
-        if (!props.iid) {
+        if (!iid) {
             return;
         }
 
-        const url = `/api/v4/projects/${encodeURIComponent(props.currentProjectPath)}/merge_requests/${props.iid}?is_custom=1`;
+        const url = `/api/v4/projects/${encodeURIComponent(currentProjectPath)}/merge_requests/${iid}?is_custom=1`;
 
         const { data } = await useFetch(url)
             .json();
@@ -226,13 +220,13 @@
         return data;
     }
 
-    async function updateReviewers(ids) {
-        if (!props.iid) {
+    async function updateReviewers(ids: number[]) {
+        if (!iid) {
             return;
         }
 
-        await useFetch(`/api/v4/projects/${encodeURIComponent(props.currentProjectPath)}/merge_requests/${props.iid}`, {
-            headers: { 'X-CSRF-TOKEN': props.csrfToken },
+        await useFetch(`/api/v4/projects/${encodeURIComponent(currentProjectPath)}/merge_requests/${iid}`, {
+            headers: { 'X-CSRF-TOKEN': csrfToken },
         })
             .put({ reviewer_ids: ids });
 

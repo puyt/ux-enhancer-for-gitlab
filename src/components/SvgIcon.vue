@@ -16,20 +16,13 @@
     lang="ts"
     setup
 >
-    import { toRefs } from 'vue';
-
     interface Props {
-        path: string,
+        path?: string,
         isGitlab?: boolean,
     }
 
-    const props = withDefaults(defineProps<Props>(), {
-        path: '',
-        isGitlab: false,
-    });
-
     const {
-        path,
-        isGitlab,
-    } = toRefs(props);
+        path = '',
+        isGitlab = false,
+    } = defineProps<Props>();
 </script>

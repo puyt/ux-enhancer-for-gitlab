@@ -81,7 +81,6 @@
         type Ref,
         shallowRef,
         type ShallowRef,
-        toRefs,
         watch,
     } from 'vue';
     import type { GitLabDiscussion } from '../types';
@@ -98,18 +97,14 @@
     type IID = string | Array<string>;
 
     interface Props {
-        currentProjectPath: string,
-        isMergeRequest: boolean,
+        currentProjectPath?: string,
+        isMergeRequest?: boolean,
     }
 
-    const props = withDefaults(defineProps<Props>(), {
-        currentProjectPath: '',
-        isMergeRequest: true,
-    });
     const {
-        currentProjectPath,
-        isMergeRequest,
-    } = toRefs(props);
+        currentProjectPath = '',
+        isMergeRequest = true,
+    } = defineProps<Props>();
 
     const {
         gitlabUserId,
@@ -120,7 +115,7 @@
     const discussions: Ref<Map<string, GitLabDiscussion[]>> = ref(new Map());
 
     function getProjectPath(iid: IID): string {
-        return Array.isArray(iid) ? iid[0] : currentProjectPath.value;
+        return Array.isArray(iid) ? iid[0] : currentProjectPath;
     }
 
     function getIid(iid: IID): string {
@@ -131,8 +126,8 @@
         return ('teleport-issuable-meta-' + getProjectPath(idd) + '-' + getIid(idd)).replace(/\//g, '_');
     }
 
-    const isShowMyUnresolvedWithResponsesEnabled = computed(() => (isMergeRequest.value && !!getSetting(Preference.MR_SHOW_MY_UNRESOLVED_THREADS_WITH_RESPONSES, true) || (!isMergeRequest.value && !!getSetting(Preference.ISSUE_SHOW_MY_UNRESOLVED_THREADS_WITH_RESPONSES, true))));
-    const isShowMyUnresolvedEnabled = computed(() => (isMergeRequest.value && !!getSetting(Preference.MR_SHOW_MY_UNRESOLVED_THREADS, true) || (!isMergeRequest.value && !!getSetting(Preference.ISSUE_SHOW_MY_UNRESOLVED_THREADS, true))));
+    const isShowMyUnresolvedWithResponsesEnabled = computed(() => (isMergeRequest && !!getSetting(Preference.MR_SHOW_MY_UNRESOLVED_THREADS_WITH_RESPONSES, true) || (!isMergeRequest && !!getSetting(Preference.ISSUE_SHOW_MY_UNRESOLVED_THREADS_WITH_RESPONSES, true))));
+    const isShowMyUnresolvedEnabled = computed(() => (isMergeRequest && !!getSetting(Preference.MR_SHOW_MY_UNRESOLVED_THREADS, true) || (!isMergeRequest && !!getSetting(Preference.ISSUE_SHOW_MY_UNRESOLVED_THREADS, true))));
     const teleportIds = computed(() => extractIssuableIds.value.map((iid) => getTeleportId(iid)));
 
     const teleportElements = computed(() => teleportIds.value.reduce((acc, teleportId) => {
@@ -200,7 +195,7 @@
             const path = getProjectPath(iid);
             const id = getIid(iid);
 
-            const endpoint = `/api/v4/projects/${encodeURIComponent(path)}/${isMergeRequest.value ? 'merge_requests' : 'issues'}/${id}/discussions`;
+            const endpoint = `/api/v4/projects/${encodeURIComponent(path)}/${isMergeRequest ? 'merge_requests' : 'issues'}/${id}/discussions`;
             useFetchPaging(endpoint)
                 .then(({ data }) => {
                     if (data?.value) {
@@ -215,7 +210,7 @@
         document.querySelectorAll('.issuable-list > li .issuable-reference')
             .forEach((el) => {
                 const iid = el.textContent?.trim()
-                    ?.split(isMergeRequest.value ? '!' : '#') || [];
+                    ?.split(isMergeRequest ? '!' : '#') || [];
 
                 let resolvedId: string | string[] = iid[0];
                 if (iid.length === 2) {
@@ -224,7 +219,7 @@
                 values.push(resolvedId);
 
                 // add teleport placeholder
-                const containerElement = el.closest(isMergeRequest.value ? '.issuable-info-container' : 'li.issue');
+                const containerElement = el.closest(isMergeRequest ? '.issuable-info-container' : 'li.issue');
                 const metaElement = containerElement?.querySelector('li[data-testid="issuable-comments"]');
 
                 const placeholderElement = document.createElement('div');

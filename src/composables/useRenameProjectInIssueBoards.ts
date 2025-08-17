@@ -2,7 +2,9 @@ import { useExtractProjectPaths } from './useExtractProjectPaths';
 import { useExtensionStore } from '../store';
 import { debounce } from 'lodash-es';
 import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { Preference } from '../enums';
+import { usePageDetectionStore } from '../stores';
 
 function getPathFromLevel(str: string, level: number) {
     const parts = str.split('/');
@@ -14,6 +16,7 @@ function getPathFromLevel(str: string, level: number) {
 export function useRenameProjectInIssueBoards() {
     const { getSetting } = useExtensionStore();
     const { extract: extractProjectPaths } = useExtractProjectPaths();
+    const { isBoardPage } = storeToRefs(usePageDetectionStore());
 
     const projectNameParts = computed(() => getSetting(Preference.ISSUE_BOARDS_RENAME_PROJECT, 0) as number);
 
@@ -21,7 +24,7 @@ export function useRenameProjectInIssueBoards() {
         if (projectNameParts.value <= 0) {
             return;
         }
-        if (!window.location.href.includes('boards')) {
+        if (!isBoardPage.value) {
             return;
         }
 

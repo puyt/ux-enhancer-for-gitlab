@@ -34,6 +34,29 @@ export const enum Preference {
     MR_HOTKEY_VIEWED_NEXT = 'mr_hotkey_viewed_next',
 }
 
+export const enum PageType {
+    // Dashboard pages
+    DASHBOARD_ISSUES = 'dashboard_issues',
+    DASHBOARD_MERGE_REQUESTS = 'dashboard_merge_requests',
+    DASHBOARD_TODOS = 'dashboard_todos',
+
+    // Project pages
+    PROJECT_ISSUES = 'project_issues',
+    PROJECT_ISSUE_DETAIL = 'project_issue_detail',
+    PROJECT_MERGE_REQUESTS = 'project_merge_requests',
+    PROJECT_MERGE_REQUEST_DETAIL = 'project_merge_request_detail',
+    PROJECT_BOARDS = 'project_boards',
+    PROJECT_PIPELINES = 'project_pipelines',
+
+    // Group pages
+    GROUP_ISSUES = 'group_issues',
+    GROUP_MERGE_REQUESTS = 'group_merge_requests',
+    GROUP_BOARDS = 'group_boards',
+
+    // Other pages
+    UNKNOWN = 'unknown',
+}
+
 export const enum BrowserMessageType {
     BROWSER_REQUEST_COMPLETED = 'browser-request-completed',
 }
