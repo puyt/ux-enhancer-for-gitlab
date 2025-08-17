@@ -132,16 +132,22 @@
                 splitted[1] || '',
             ]);
 
-            const targetElement = element.closest(teleportParentSelector)
-                ?.querySelector(teleportTargetSelector);
+            const parentElement: HTMLLIElement | null = element.closest(teleportParentSelector) as (HTMLLIElement | null);
+            const targetElement: HTMLDivElement | null | undefined = parentElement?.querySelector(teleportTargetSelector);
 
-            if (!targetElement || targetElement.children[targetElement.children.length - 1]?.className === 'todo-item__labels') {
+            if (!parentElement || !targetElement || targetElement.children[targetElement.children.length - 1]?.className === 'todo-item__labels') {
                 return;
+            }
+
+            const todoItemContainerElement: HTMLDivElement | null = targetElement.closest('[data-testid="todo-item-container"]');
+            if (todoItemContainerElement) {
+                todoItemContainerElement.style.alignItems = 'center';
             }
 
             const teleportItem = document.createElement('div');
             teleportItem.className = 'todo-item__labels';
             targetElement.append(teleportItem);
+
 
             teleportElements.value[href] = [
                 projectPath,
@@ -162,7 +168,7 @@
         extractIssuableLinksOldUi();
 
         if (!todoLinks.value.length) {
-            extractIssuableLinks('ol[data-testid="todo-item-list"] li > a.gl-link', 'li', 'a > div');
+            extractIssuableLinks('ol[data-testid="todo-item-list"] li > a.gl-link', 'li', 'a > div > div:nth-child(2)');
         }
     }
 
