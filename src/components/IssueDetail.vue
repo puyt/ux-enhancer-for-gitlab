@@ -380,13 +380,18 @@
             teleportElement.value.style.display = 'flex';
         }
 
-        const stickyElement = document.querySelector('.issue-sticky-header .issue-sticky-header-text');
+        const stickyElement = document.querySelector('.issue-sticky-header .issue-sticky-header-text, .work-item-sticky-header-text .shortcut-edit-wi-description');
         if (stickyElement) {
-            stickyElement.append(teleportElement.value);
+            if (stickyElement.classList.contains('shortcut-edit-wi-description')) {
+                stickyElement.parentNode!.insertBefore(teleportElement.value, stickyElement);
+            } else {
+                stickyElement.append(teleportElement.value);
+            }
+
             return;
         }
 
-        const targetElement = document.querySelector('.issue-details .detail-page-header-actions') as HTMLDivElement | null;
+        const targetElement = document.querySelector('.issue-details .detail-page-header-actions, .work-item-view .disclosure-hierarchy + div + div') as HTMLDivElement | null;
         if (targetElement) {
             targetElement.style.marginLeft = 'auto';
             targetElement.prepend(teleportElement.value);
