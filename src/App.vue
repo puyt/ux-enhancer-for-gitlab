@@ -102,6 +102,10 @@
     const isScopedLabelsDropdownEnabled = computed(() => getSetting(Preference.GENERAL_SCOPED_LABELS_DROPDOWN, true) && csrfToken.value && (isBoardPage.value || (iid.value && (isMergeRequestPage.value || isIssuePage.value))));
     const isStarIssueBoardsEnabled = computed(() => getSetting(Preference.ISSUE_STAR_BOARDS, true) && isBoardPage.value);
 
+    function checkIsMrIssueOverviewReady() {
+        isMrIssueOverviewReady.value = !!document.querySelector('ul.issuable-list > li:first-child .issuable-reference, div[data-testid="merge-request-dashboard-tab"] div[data-testid="merge-request"]');
+    }
+
     onMounted(async () => {
         const csrfTokenMetaTag = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement;
         csrfToken.value = csrfTokenMetaTag.content || '';
@@ -121,7 +125,7 @@
 
                 useHighlightMyApprovals(gitlabUserId.value);
 
-                isMrIssueOverviewReady.value = !!document.querySelector('ul.issuable-list > li:first-child .issuable-reference');
+                checkIsMrIssueOverviewReady();
             }
         });
     });

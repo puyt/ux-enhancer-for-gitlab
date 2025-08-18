@@ -14,6 +14,7 @@
                         class="has-tooltip gl-display-none gl-sm-display-block md badge badge-pill gl-badge badge-info"
                         :style="{
                             color: 'var(--gl-badge-info-text-color-default) !important',
+                            listStyle: 'none',
                         }"
                         title="My unresolved threads with responses"
                     >
@@ -34,6 +35,7 @@
                         :style="{
                             color: 'var(--gl-badge-danger-text-color-default) !important',
                             opacity: myUnresolvedThreadsCount.get(teleportId) ? 1 : 0.5,
+                            listStyle: 'none',
                         }"
                         title="My unresolved threads"
                     >
@@ -54,6 +56,7 @@
                         :style="{
                             color: 'var(--gl-badge-warning-text-color-default) !important',
                             opacity: unresolvedThreadsCount.get(teleportId) ? 1 : 0.5,
+                            listStyle: 'none',
                         }"
                         title="Unresolved threads"
                     >
@@ -207,20 +210,28 @@
 
     function extractIssuableIids() {
         const values: Array<string | Array<string>> = [];
-        document.querySelectorAll('.issuable-list > li .issuable-reference')
+        document.querySelectorAll('.issuable-list > li .issuable-reference, div[data-testid="merge-request-dashboard-tab"] div[data-testid="merge-request"] > div[role="cell"]:nth-child(2) > div')
             .forEach((el) => {
-                const iid = el.textContent?.trim()
-                    ?.split(isMergeRequest ? '!' : '#') || [];
+                const text = el.textContent || '';
+                const regex = /^[\s\n]*([a-zA-Z0-9/_-]+)[!#](\d+)|[!#](\d+)/;
+                const match = text.match(regex);
 
-                let resolvedId: string | string[] = iid[0];
-                if (iid.length === 2) {
-                    resolvedId = iid[0] === '' ? iid[1] : iid;
+                let resolvedId: string | string[] = '';
+                if (match) {
+                    if (match[1] && match[2]) {
+                        // Has explicit project path before ! or #
+                        resolvedId = [match[1], match[2]];
+                    } else if (match[3]) {
+                        // Only an IID like #123 or !123
+                        resolvedId = match[3];
+                    }
                 }
+
                 values.push(resolvedId);
 
                 // add teleport placeholder
-                const containerElement = el.closest(isMergeRequest ? '.issuable-info-container' : 'li.issue');
-                const metaElement = containerElement?.querySelector('li[data-testid="issuable-comments"]');
+                const containerElement = el.closest(isMergeRequest ? '.issuable-info-container, .issue, div[data-testid="merge-request"]' : 'li.issue');
+                const metaElement = containerElement?.querySelector('li[data-testid="issuable-comments"], li:has(svg[data-testid="comments-icon"]), div[role="cell"] > div:has(svg[data-testid="comments-icon"])');
 
                 const placeholderElement = document.createElement('div');
                 placeholderElement.style.display = 'flex';
