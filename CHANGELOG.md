@@ -5,6 +5,17 @@
 GitLab is gradually updating its UI as part of the "work items" overhaul. Since this extension heavily depends on the DOM, some features might not function properly with the new UI.
 I only have access to the GitLab version used at our company, so I might not catch every change. I'm working on fixing the broken features one by one, while trying to make it backwards compatible which I cannot verify.
 
+## 4.6.0 - 2025.08 (18/08/2025)
+
+### ✨ Features
+- **starred-boards**: add remove starred board from command panel.
+
+### 🪲 Bug Fixes
+- **todo**: align labels correctly for GitLab 18.x.
+- **issue-detail**: render "validation" status in GitLab 18.x
+- **unresolved-threads**: adapt the badges to GitLab 18.x
+
+
 ## 4.5.0 - 2025.07 (10/07/2025)
 
 ### 🚀 Performance
