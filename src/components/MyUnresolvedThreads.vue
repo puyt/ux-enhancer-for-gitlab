@@ -79,23 +79,29 @@
     setup
 >
     import {
-        computed,
-        ref,
-        type Ref,
-        shallowRef,
-        type ShallowRef,
-        watch,
-    } from 'vue';
-    import type { GitLabDiscussion } from '../types';
-    import {
         mdiCommentAccountOutline,
         mdiCommentAlertOutline,
         mdiCommentTextMultipleOutline,
     } from '@mdi/js';
-    import { useExtensionStore } from '../store';
-    import SvgIcon from './SvgIcon.vue';
+    import { debounce } from 'lodash-es';
+    import {
+        computed,
+        onBeforeUnmount,
+        onMounted,
+        ref,
+        type Ref,
+        shallowRef,
+        type ShallowRef,
+    } from 'vue';
     import { useFetchPaging } from '../composables/useFetchPaging';
-    import { Preference } from '../enums';
+    import { useMitt } from '../composables/useMitt';
+    import {
+        MittEventKey,
+        Preference,
+    } from '../enums';
+    import { useExtensionStore } from '../store';
+    import type { GitLabDiscussion } from '../types';
+    import SvgIcon from './SvgIcon.vue';
 
     type IID = string | Array<string>;
 
@@ -113,6 +119,11 @@
         gitlabUserId,
         getSetting,
     } = useExtensionStore();
+
+    const {
+        on,
+        off,
+    } = useMitt();
 
     const extractIssuableIds: ShallowRef<Array<IID>> = shallowRef([]);
     const discussions: Ref<Map<string, GitLabDiscussion[]>> = ref(new Map());
@@ -220,7 +231,10 @@
                 if (match) {
                     if (match[1] && match[2]) {
                         // Has explicit project path before ! or #
-                        resolvedId = [match[1], match[2]];
+                        resolvedId = [
+                            match[1],
+                            match[2],
+                        ];
                     } else if (match[3]) {
                         // Only an IID like #123 or !123
                         resolvedId = match[3];
@@ -246,9 +260,30 @@
         fetchDiscussions();
     }
 
-    watch(isShowMyUnresolvedEnabled, (newValue) => {
-        if (newValue) {
-            extractIssuableIids();
+    const debouncedExtractIssuableIids = debounce(extractIssuableIids, 400);
+
+    function onClickHandler(event: Event) {
+        const targetEl = event.target as HTMLElement;
+        if (targetEl.closest('.crud-header [data-testid="crud-collapse-toggle"]')) {
+            debouncedExtractIssuableIids();
         }
-    }, { immediate: true });
+    }
+
+    onMounted(() => {
+        if (!isShowMyUnresolvedEnabled.value) {
+            return;
+        }
+
+        if (document.querySelector('.crud-header [data-testid="crud-collapse-toggle"]')) {
+            document.addEventListener('click', onClickHandler);
+        }
+
+        on(MittEventKey.BROWSER_REQUEST_COMPLETED, debouncedExtractIssuableIids);
+        debouncedExtractIssuableIids();
+    });
+
+    onBeforeUnmount(() => {
+        off(MittEventKey.BROWSER_REQUEST_COMPLETED, debouncedExtractIssuableIids);
+        document.removeEventListener('click', onClickHandler);
+    });
 </script>
