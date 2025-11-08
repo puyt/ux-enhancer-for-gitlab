@@ -5,6 +5,18 @@
 GitLab is gradually updating its UI as part of the "work items" overhaul. Since this extension heavily depends on the DOM, some features might not function properly with the new UI.
 I only have access to the GitLab version used at our company, so I might not catch every change. I'm working on fixing the broken features one by one, while trying to make it backwards compatible which I cannot verify.
 
+## 4.7.0 - 2025.11 (09/11/2025)
+
+### ✨ Features
+
+- **mr**: add remove source branch button for closed MRs
+
+### 🪲 Bug Fixes
+
+- **mr-dashboard**: fix repeated unresolved badges
+- **preferences**: fix offset with new duo chat button
+- **avatar**: fix double avatars for initials
+
 ## 4.6.1 - 2025.09 (08/09/2025)
 
 ### 🪲 Bug Fixes
