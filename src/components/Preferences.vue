@@ -553,7 +553,7 @@
             return;
         }
 
-        const offsetElements: NodeListOf<HTMLDivElement> = document.querySelectorAll('.top-bar-container > div:last-child > *');
+        const offsetElements: NodeListOf<HTMLDivElement> = document.querySelectorAll('.top-bar-container > div:last-child > *, .top-bar-container > button');
 
         offsetElements.forEach((el) => {
             offsetRight.value += el.offsetWidth;
