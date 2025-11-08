@@ -1,6 +1,6 @@
 import { debounce } from 'lodash-es';
-import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 import { Preference } from '../enums';
 import { useExtensionStore } from '../store';
 import { usePageDetectionStore } from '../stores';

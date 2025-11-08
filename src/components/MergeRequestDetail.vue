@@ -96,6 +96,12 @@
     setup
 >
     import {
+        mdiCommentAccountOutline,
+        mdiCommentTextMultipleOutline,
+    } from '@mdi/js';
+    import { useFetch } from '@vueuse/core';
+    import { debounce } from 'lodash-es';
+    import {
         computed,
         nextTick,
         onBeforeUnmount,
@@ -105,22 +111,16 @@
         type ShallowRef,
         shallowRef,
     } from 'vue';
-    import type { GitLabDiscussion } from '../types';
-    import { debounce } from 'lodash-es';
     import {
         gSvgChecronDown,
         gSvgChevronUp,
     } from '../assets/icons';
-    import SvgIcon from './SvgIcon.vue';
-    import { useExtensionStore } from '../store';
-    import { useThreadsByDefault } from '../composables/useThreadsByDefault';
     import { useFetchPaging } from '../composables/useFetchPaging';
-    import {
-        mdiCommentAccountOutline,
-        mdiCommentTextMultipleOutline,
-    } from '@mdi/js';
-    import { useFetch } from '@vueuse/core';
+    import { useThreadsByDefault } from '../composables/useThreadsByDefault';
     import { Preference } from '../enums';
+    import { useExtensionStore } from '../store';
+    import type { GitLabDiscussion } from '../types';
+    import SvgIcon from './SvgIcon.vue';
 
     interface Props {
         iid?: number,
@@ -140,6 +140,8 @@
         gitlabUserId,
         getSetting,
     } = useExtensionStore();
+
+    const mrData = shallowRef<any>(null);
 
     const teleportElement: Ref<HTMLElement | null> = ref(null);
     const discussions: ShallowRef<GitLabDiscussion[]> = shallowRef([]);
@@ -217,7 +219,7 @@
         const { data } = await useFetch(url)
             .json();
 
-        return data;
+        mrData.value = data.value;
     }
 
     async function updateReviewers(ids: number[]) {
@@ -234,13 +236,13 @@
         addAssignYourselfButton();
     }
 
-    async function addAssignYourselfButton() {
+
+    function addAssignYourselfButton() {
         if (!getSetting(Preference.MR_SHOW_ASSIGN_YOURSELF, true)) {
             return;
         }
 
-        const data = await fetchMR();
-        const reviewerIds = data?.value?.reviewers.map((reviewer: any) => reviewer.id) || [];
+        const reviewerIds = mrData?.value?.reviewers.map((reviewer: any) => reviewer.id) || [];
 
         const isAssigned = reviewerIds.includes(gitlabUserId);
         const newReviewerIds = isAssigned ? reviewerIds.filter((id: number) => id !== gitlabUserId) : [
@@ -266,6 +268,89 @@
         const blockReviewer = document.querySelector('.block.reviewer .reviewers-dropdown');
         if (blockReviewer && blockReviewer.parentElement) {
             blockReviewer.parentElement.insertBefore(assignYourselfDiv, blockReviewer);
+        }
+    }
+
+    async function deleteSourceBranch() {
+        if (!mrData.value) {
+            return;
+        }
+
+        const projectId = mrData.value.source_project_id || mrData.value.project_id;
+        const sourceBranch = mrData.value.source_branch;
+
+        if (!projectId || !sourceBranch) {
+            return;
+        }
+
+        const confirmed = window.confirm(`Delete source branch "${sourceBranch}"? This cannot be undone!`);
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            const endpoint = `/api/v4/projects/${encodeURIComponent(projectId)}/repository/branches/${encodeURIComponent(sourceBranch)}`;
+
+            await useFetch(endpoint, { headers: { 'X-CSRF-TOKEN': csrfToken } })
+                .delete();
+
+            const btnEl = document.getElementById('glab-enhancer-browser-extension__delete-source-branch-btn') as HTMLButtonElement | null;
+            if (btnEl) {
+                btnEl.setAttribute('disabled', 'true');
+                btnEl.textContent = 'Deleted';
+            }
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to delete source branch', error);
+            window.alert('Failed to delete source branch. See console for details.');
+        }
+    }
+
+    async function fetchBranch(projectId: number | string, branchName: string) {
+        if (!projectId || !branchName) {
+            return null;
+        }
+
+        const endpoint = `/api/v4/projects/${encodeURIComponent(projectId)}/repository/branches/${encodeURIComponent(branchName)}`;
+        try {
+            const { data } = await useFetch(endpoint)
+                .json();
+
+            return data.value || null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async function addRemoveSourceBranchButton() {
+        if (!mrData.value || mrData.value.state !== 'closed') {
+            return;
+        }
+
+        const projectId = mrData.value.source_project_id || mrData.value.project_id;
+        const sourceBranch = mrData.value.source_branch;
+        if (!projectId || !sourceBranch) {
+            return;
+        }
+
+        const branchObj = await fetchBranch(projectId, sourceBranch);
+        if (!branchObj) {
+            return;
+        }
+
+        const buttonEl = document.createElement('button');
+        buttonEl.id = 'glab-enhancer-browser-extension__delete-source-branch-btn';
+        buttonEl.className = 'gl-float-left gl-hidden @md/panel:gl-inline-flex btn gl-button btn-confirm btn-sm btn-confirm-tertiary js-remove-branch-button';
+        buttonEl.innerHTML = `<span class="gl-button-text">Delete source branch</span>`;
+
+        buttonEl.addEventListener('click', (e) => {
+            e.preventDefault();
+            deleteSourceBranch();
+        });
+
+        const targetEl = document.querySelector('.mr-widget-section .mr-widget-body .media-body + div');
+        if (targetEl) {
+            targetEl.appendChild(buttonEl);
         }
     }
 
@@ -296,8 +381,12 @@
             }
         });
 
-        nextTick(() => {
+        nextTick(async () => {
+            await fetchMR();
+
             addAssignYourselfButton();
+
+            addRemoveSourceBranchButton();
 
             render();
         });
