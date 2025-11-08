@@ -13,9 +13,9 @@
                     :key="label"
                 >
                     <GLabel
-                        :color="getProjectLabel(projectPath, label)!.color"
+                        :color="getProjectLabel(projectPath, label)?.color || ''"
                         :label="label"
-                        :text-color="getProjectLabel(projectPath, label)!.text_color"
+                        :text-color="getProjectLabel(projectPath, label)?.text_color || ''"
                     />
                 </template>
             </teleport>

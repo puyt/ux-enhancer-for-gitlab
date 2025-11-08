@@ -221,7 +221,7 @@
 
     function extractIssuableIids() {
         const values: Array<string | Array<string>> = [];
-        document.querySelectorAll('.issuable-list > li .issuable-reference, div[data-testid="merge-request-dashboard-tab"] div[data-testid="merge-request"] > div[role="cell"]:nth-child(2) > div')
+        document.querySelectorAll('.issuable-list > li .issuable-reference, div[data-testid="merge-request-dashboard-tab"] div[data-testid="merge-request"] > div[role="cell"]:nth-child(2) > div:not([data-testid="labels-container"])')
             .forEach((el) => {
                 const text = el.textContent || '';
                 const regex = /^[\s\n]*([a-zA-Z0-9/_-]+)[!#](\d+)|[!#](\d+)/;
