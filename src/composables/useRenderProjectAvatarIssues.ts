@@ -46,7 +46,8 @@ export function useRenderProjectAvatarIssues() {
                     return;
                 }
 
-                const avatarElement = parentElement.querySelector('img.glab-enhancer-browser-extension__project-avatar');
+                const avatarElement = parentElement.querySelector('.glab-enhancer-browser-extension__project-avatar');
+
                 if (avatarElement) {
                     return;
                 }
