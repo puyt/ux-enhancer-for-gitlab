@@ -2,6 +2,9 @@
     <div
         id="glab-enhancer-browser-extension__preferences"
         ref="rootPreferencesElement"
+        :class="{
+            'glab-enhancer-browser-extension__preferences--left': isNewUIEnabled,
+        }"
         :style="{
             marginRight: `${offsetRight ? offsetRight + 16 : 0}px`,
         }"
@@ -34,7 +37,6 @@
                 :style="{
                     width: '400px',
                 }"
-                style="right: 0; left: initial;"
             >
                 <div class="gl-dropdown-inner">
                     <div class="gl-dropdown-contents">
@@ -546,8 +548,14 @@
         setSetting(preference.key, !getSetting(preference.key, preference.defaultValue));
     }
 
+    const isNewUIEnabled = document.querySelector('.page-with-panels') !== null;
     const offsetRight = ref(0);
-    onMounted(() => {
+
+    function calculateOffsetRight() {
+        if (isNewUIEnabled) {
+            return;
+        }
+
         const topbarContainerElement = document.querySelector('.top-bar-container');
         if (!topbarContainerElement || topbarContainerElement.childElementCount <= 1) {
             return;
@@ -558,6 +566,11 @@
         offsetElements.forEach((el) => {
             offsetRight.value += el.offsetWidth;
         });
+    }
+
+
+    onMounted(() => {
+        calculateOffsetRight();
     });
 </script>
 
@@ -567,6 +580,21 @@
         z-index: 999;
         top: 7px;
         right: 16px;
+
+        &.glab-enhancer-browser-extension__preferences--left {
+            right: auto;
+            left: 74px;
+
+            ul.dropdown-menu {
+                right: initial;
+                left: 0;
+            }
+        }
+
+        ul.dropdown-menu {
+            right: 0;
+            left: initial;
+        }
 
         .btn-group {
             position: relative;
