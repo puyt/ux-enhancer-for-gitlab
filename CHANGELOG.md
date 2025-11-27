@@ -5,6 +5,12 @@
 GitLab is gradually updating its UI as part of the "work items" overhaul. Since this extension heavily depends on the DOM, some features might not function properly with the new UI.
 I only have access to the GitLab version used at our company, so I might not catch every change. I'm working on fixing the broken features one by one, while trying to make it backwards compatible which I cannot verify.
 
+## 4.7.1 - 2025.11.1 (27/11/2025)
+
+### 🪲 Bug Fixes
+
+- **preferences**: fix position of the preferences button with new GitLab UI.
+
 ## 4.7.0 - 2025.11 (09/11/2025)
 
 ### ✨ Features
