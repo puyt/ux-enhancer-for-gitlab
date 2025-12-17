@@ -142,6 +142,7 @@
                                                     class="form-control gl-border-gray-200"
                                                     style="margin-left: 24px; margin-bottom: 8px; width: 20%;"
                                                     type="number"
+                                                    min="0"
                                                     :value="getSetting(preference.key, preference.defaultValue)"
 
                                                     @input="onInput(preference.key, $event)"

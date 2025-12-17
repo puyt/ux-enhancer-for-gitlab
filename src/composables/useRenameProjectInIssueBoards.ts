@@ -21,6 +21,9 @@ export function useRenameProjectInIssueBoards() {
     const projectNameParts = computed(() => getSetting(Preference.ISSUE_BOARDS_RENAME_PROJECT, 0) as number);
 
     function injectProjectName(projectPath: string) {
+        if (projectNameParts.value <= 0) {
+            return;
+        }
         if (!isBoardPage.value) {
             return;
         }
@@ -32,12 +35,7 @@ export function useRenameProjectInIssueBoards() {
         }
         
         targetElements.forEach((targetElement) => {
-            if (projectNameParts.value <= 0) {
-                const parts = projectPath.split("/");
-                targetElement.textContent = parts[parts.length - 1];
-            } else {
-                targetElement.textContent = getPathFromLevel(projectPath, projectNameParts.value);
-            }
+            targetElement.textContent = getPathFromLevel(projectPath, projectNameParts.value);
         });
     }
 
