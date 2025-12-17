@@ -1,7 +1,7 @@
 import { useExtractProjectPaths } from './useExtractProjectPaths';
 import { useExtensionStore } from '../store';
 import { debounce } from 'lodash-es';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Preference } from '../enums';
 import { usePageDetectionStore } from '../stores';
@@ -21,18 +21,24 @@ export function useRenameProjectInIssueBoards() {
     const projectNameParts = computed(() => getSetting(Preference.ISSUE_BOARDS_RENAME_PROJECT, 0) as number);
 
     function injectProjectName(projectPath: string) {
-        if (projectNameParts.value <= 0) {
-            return;
-        }
         if (!isBoardPage.value) {
             return;
         }
 
-        const targetElements = document.querySelectorAll(`li.board-card span[title="${projectPath}"]`);
+        let targetElements = document.querySelectorAll(`li.board-card button.board-item-path[title="${projectPath}"]`);
+        if (targetElements.length === 0) {
+            // Backward compatibility with old GitLab structure
+            targetElements = document.querySelectorAll(`li.board-card span[title="${projectPath}"]`);
+        }
+        
         targetElements.forEach((targetElement) => {
-            targetElement.textContent = getPathFromLevel(projectPath, projectNameParts.value);
+            if (projectNameParts.value <= 0) {
+                const parts = projectPath.split("/");
+                targetElement.textContent = parts[parts.length - 1];
+            } else {
+                targetElement.textContent = getPathFromLevel(projectPath, projectNameParts.value);
+            }
         });
-
     }
 
     function injectProjectNames() {
@@ -42,7 +48,16 @@ export function useRenameProjectInIssueBoards() {
         });
     }
 
+    const debouncedRename = debounce(injectProjectNames, 500);
+
+    watch(projectNameParts, () => {
+        if (isBoardPage.value) {
+        debouncedRename();
+        }
+    });
+
+
     return {
-        rename: debounce(injectProjectNames, 500),
+        rename: debouncedRename
     };
 }
