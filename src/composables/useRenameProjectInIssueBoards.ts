@@ -50,7 +50,7 @@ export function useRenameProjectInIssueBoards() {
 
     watch(projectNameParts, () => {
         if (isBoardPage.value) {
-        debouncedRename();
+            debouncedRename();
         }
     });
 
