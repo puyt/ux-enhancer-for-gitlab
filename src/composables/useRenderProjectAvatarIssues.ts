@@ -104,7 +104,12 @@ export function useRenderProjectAvatarIssues() {
             }
 
             if (isBoardPage.value && avatarUrl.includes('http')) {
-                const targetElements = document.querySelectorAll(`li.board-card span[title="${projectPath}"]`);
+                let targetElements = document.querySelectorAll(`li.board-card button.board-item-path[title="${projectPath}"]`);
+                if (targetElements.length === 0) {
+                    // Backward compatibility with old GitLab structure
+                    targetElements = document.querySelectorAll(`li.board-card span[title="${projectPath}"]`);
+                }
+                
                 targetElements.forEach((targetElement) => {
                     if (targetElement.parentElement && targetElement.previousElementSibling) {
                         const imgElement = document.createElement('img');

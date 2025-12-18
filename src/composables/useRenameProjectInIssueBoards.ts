@@ -1,7 +1,7 @@
 import { useExtractProjectPaths } from './useExtractProjectPaths';
 import { useExtensionStore } from '../store';
 import { debounce } from 'lodash-es';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Preference } from '../enums';
 import { usePageDetectionStore } from '../stores';
@@ -28,11 +28,15 @@ export function useRenameProjectInIssueBoards() {
             return;
         }
 
-        const targetElements = document.querySelectorAll(`li.board-card span[title="${projectPath}"]`);
+        let targetElements = document.querySelectorAll(`li.board-card button.board-item-path[title="${projectPath}"]`);
+        if (targetElements.length === 0) {
+            // Backward compatibility with old GitLab structure
+            targetElements = document.querySelectorAll(`li.board-card span[title="${projectPath}"]`);
+        }
+        
         targetElements.forEach((targetElement) => {
             targetElement.textContent = getPathFromLevel(projectPath, projectNameParts.value);
         });
-
     }
 
     function injectProjectNames() {
@@ -42,7 +46,16 @@ export function useRenameProjectInIssueBoards() {
         });
     }
 
+    const debouncedRename = debounce(injectProjectNames, 500);
+
+    watch(projectNameParts, () => {
+        if (isBoardPage.value) {
+            debouncedRename();
+        }
+    });
+
+
     return {
-        rename: debounce(injectProjectNames, 500),
+        rename: debouncedRename
     };
 }
