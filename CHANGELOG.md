@@ -5,6 +5,13 @@
 GitLab is gradually updating its UI as part of the "work items" overhaul. Since this extension heavily depends on the DOM, some features might not function properly with the new UI.
 I only have access to the GitLab version used at our company, so I might not catch every change. I'm working on fixing the broken features one by one, while trying to make it backwards compatible which I cannot verify.
 
+## 4.7.2 - 2025.12 (18/12/2025)
+
+### 🪲 Bug Fixes
+
+- **issue-boards**: fix project path display in issue boards for new GitLab UI by @tomerramk in [#49](https://github.com/puyt/ux-enhancer-for-gitlab/pull/49).
+- **preferences**: enforce minimum value for project name parts in preferences by @tomerramk in [#49](https://github.com/puyt/ux-enhancer-for-gitlab/pull/49).
+
 ## 4.7.1 - 2025.11.1 (27/11/2025)
 
 ### 🪲 Bug Fixes
