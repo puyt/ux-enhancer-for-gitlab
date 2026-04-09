@@ -247,12 +247,15 @@
                 const containerElement = el.closest(isMergeRequest ? '.issuable-info-container, .issue, div[data-testid="merge-request"]' : 'li.issue');
                 const metaElement = containerElement?.querySelector('li[data-testid="issuable-comments"], li:has(svg[data-testid="comments-icon"]), div[role="cell"] > div:has(svg[data-testid="comments-icon"])');
 
-                const placeholderElement = document.createElement('div');
-                placeholderElement.style.display = 'flex';
-                placeholderElement.style.alignItems = 'center';
-                placeholderElement.style.gap = '4px';
-                placeholderElement.id = getTeleportId(resolvedId);
-                metaElement?.parentElement?.insertBefore(placeholderElement, metaElement.nextSibling);
+                const teleportId = getTeleportId(resolvedId);
+                if (!document.getElementById(teleportId) && metaElement?.parentElement) {
+                    const placeholderElement = document.createElement('div');
+                    placeholderElement.style.display = 'flex';
+                    placeholderElement.style.alignItems = 'center';
+                    placeholderElement.style.gap = '4px';
+                    placeholderElement.id = teleportId;
+                    metaElement.parentElement.insertBefore(placeholderElement, metaElement.nextSibling);
+                }
             });
 
         extractIssuableIds.value = values;
