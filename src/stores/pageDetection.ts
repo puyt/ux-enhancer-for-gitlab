@@ -1,6 +1,12 @@
-import { useBrowserLocation } from '@vueuse/core';
+import {
+    useBrowserLocation,
+    useEventListener,
+} from '@vueuse/core';
 import { defineStore } from 'pinia';
-import { computed } from 'vue';
+import {
+    computed,
+    ref,
+} from 'vue';
 import { APP_NAMESPACE } from '../constants';
 import { PageType } from '../enums';
 
@@ -12,14 +18,58 @@ export const usePageDetectionStore = defineStore(`${APP_NAMESPACE}/pageDetection
         return oldValue === newValue ? oldValue : newValue;
     });
 
+    const searchRef = ref(window.location.search);
+
+    function updateSearchQuery() {
+        searchRef.value = window.location.search;
+    }
+
+    useEventListener(window, 'popstate', updateSearchQuery);
+    useEventListener(window, 'hashchange', updateSearchQuery);
+
+    const originalPushState = history.pushState.bind(history);
+    history.pushState = (...args: Parameters<typeof history.pushState>) => {
+        originalPushState(...args);
+        updateSearchQuery();
+    };
+
+    const originalReplaceState = history.replaceState.bind(history);
+    history.replaceState = (...args: Parameters<typeof history.replaceState>) => {
+        originalReplaceState(...args);
+        updateSearchQuery();
+    };
+
     const search = computed<string>((oldValue) => {
-        const newValue = location.value.search || '';
+        const newValue = searchRef.value || '';
         return oldValue === newValue ? oldValue : newValue;
     });
 
     const href = computed<string>((oldValue) => {
         const newValue = location.value.href || '';
         return oldValue === newValue ? oldValue : newValue;
+    });
+
+    const panelContext = computed<{
+        iid: number;
+        projectPath: string
+    } | null>(() => {
+        const show = new URLSearchParams(search.value).get('show');
+        if (!show) {
+            return null;
+        }
+
+        try {
+            const decoded = JSON.parse(atob(show));
+            const iid = parseInt(decoded.iid, 10);
+            const projectPath = decoded.full_path as string;
+
+            return (iid && projectPath) ? {
+                iid,
+                projectPath,
+            } : null;
+        } catch {
+            return null;
+        }
     });
 
     const projectPath = computed<string | undefined>((oldValue) => {
@@ -154,6 +204,7 @@ export const usePageDetectionStore = defineStore(`${APP_NAMESPACE}/pageDetection
         // Extracted data
         projectPath,
         iid,
+        panelContext,
         pageType,
 
         // Category flags

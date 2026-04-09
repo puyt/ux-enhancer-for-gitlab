@@ -29,8 +29,8 @@
         <ScopedLabelsDropdowns
             v-if="isScopedLabelsDropdownEnabled"
             :csrf-token="csrfToken"
-            :current-project-path="!isGroupPage ? projectPath : ''"
-            :iid="iid"
+            :current-project-path="effectiveProjectPath"
+            :iid="effectiveIid"
         />
 
         <StarIssueBoards v-if="isStarIssueBoardsEnabled" />
@@ -83,12 +83,16 @@
     const {
         projectPath,
         iid,
+        panelContext,
         isIssuePage,
         isMergeRequestPage,
         isBoardPage,
         isTodoPage,
         isGroupPage,
     } = storeToRefs(pageDetectionStore);
+
+    const effectiveIid = computed(() => panelContext.value?.iid ?? iid.value);
+    const effectiveProjectPath = computed(() => panelContext.value?.projectPath ?? (!isGroupPage.value ? projectPath.value : ''));
 
     usePersistentFilters();
     const { render: renderProjectAvatars } = useRenderProjectAvatarIssues();
@@ -99,7 +103,7 @@
     const csrfToken = ref('');
     const isMrIssueOverviewReady = ref(false);
 
-    const isScopedLabelsDropdownEnabled = computed(() => getSetting(Preference.GENERAL_SCOPED_LABELS_DROPDOWN, true) && csrfToken.value && (isBoardPage.value || (iid.value && (isMergeRequestPage.value || isIssuePage.value))));
+    const isScopedLabelsDropdownEnabled = computed(() => getSetting(Preference.GENERAL_SCOPED_LABELS_DROPDOWN, true) && csrfToken.value && (isBoardPage.value || (effectiveIid.value && (isMergeRequestPage.value || isIssuePage.value))));
     const isStarIssueBoardsEnabled = computed(() => getSetting(Preference.ISSUE_STAR_BOARDS, true) && isBoardPage.value);
 
     function checkIsMrIssueOverviewReady() {
