@@ -5,6 +5,17 @@
 GitLab is gradually updating its UI as part of the "work items" overhaul. Since this extension heavily depends on the DOM, some features might not function properly with the new UI.
 I only have access to the GitLab version used at our company, so I might not catch every change. I'm working on fixing the broken features one by one, while trying to make it backwards compatible which I cannot verify.
 
+## 4.8.0 - 2026.04 (09/04/2026)
+
+### ✨ Features
+
+- **scoped-labels-dropdown**: add support for side panels with new GitLab UI.
+
+### 🪲 Bug Fixes
+
+- **issue**: add support for work items pages.
+- **unresolved-threads**: fix duplicate teleport injections on work items page.
+
 ## 4.7.2 - 2025.12 (18/12/2025)
 
 ### 🪲 Bug Fixes
