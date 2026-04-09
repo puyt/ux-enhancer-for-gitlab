@@ -1,8 +1,8 @@
 import { useBrowserLocation } from '@vueuse/core';
 import { defineStore } from 'pinia';
-import { computed, watchEffect } from 'vue';
-import { PageType } from '../enums';
+import { computed } from 'vue';
 import { APP_NAMESPACE } from '../constants';
+import { PageType } from '../enums';
 
 export const usePageDetectionStore = defineStore(`${APP_NAMESPACE}/pageDetection`, () => {
     const location = useBrowserLocation();
@@ -57,9 +57,9 @@ export const usePageDetectionStore = defineStore(`${APP_NAMESPACE}/pageDetection
             return PageType.GROUP_MERGE_REQUESTS;
         } else if (path.includes('/groups/') && path.includes('/boards')) {
             return PageType.GROUP_BOARDS;
-        } else if (path.includes('/-/issues') && hasIid) {
+        } else if ((path.includes('/-/issues') || path.includes('/-/work_items')) && hasIid) {
             return PageType.PROJECT_ISSUE_DETAIL;
-        } else if (path.includes('/-/issues')) {
+        } else if ((path.includes('/-/issues') || path.includes('/-/work_items'))) {
             return PageType.PROJECT_ISSUES;
         } else if (path.includes('/-/merge_requests') && hasIid) {
             return PageType.PROJECT_MERGE_REQUEST_DETAIL;

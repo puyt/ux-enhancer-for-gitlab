@@ -178,10 +178,14 @@
                 return;
             }
 
-            const regex = /^(merge_requests|issues)\/(\d+)/;
+            const regex = /^(merge_requests|issues|work_items)\/(\d+)/;
             const match = link.match(regex);
             if (!match?.[1] && !match?.[2]) {
                 return;
+            }
+
+            if (match[1] === 'work_items') {
+                match[1] = 'issues';
             }
 
             useFetch(`/api/v4/projects/${encodeURIComponent(path)}/${match[1]}/${match[2]}?is_custom=1`)
