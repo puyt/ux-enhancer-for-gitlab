@@ -442,6 +442,17 @@
                 defaultValue: 0,
             },
         ],
+        'Epics': [
+            {
+                label: 'Show assignees on epic board cards',
+                title: 'Render assignee avatars on epic board cards (mirrors issue board UI)',
+                key: Preference.EPIC_BOARDS_SHOW_ASSIGNEES,
+                icon: mdiAccountCircleOutline,
+                isGitlabIcon: false,
+                iconClassName: '',
+                defaultValue: true,
+            },
+        ],
         'Merge Requests': [
             {
                 label: 'Highlight my MRs',

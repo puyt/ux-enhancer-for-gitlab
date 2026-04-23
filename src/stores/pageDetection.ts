@@ -105,6 +105,8 @@ export const usePageDetectionStore = defineStore(`${APP_NAMESPACE}/pageDetection
             return PageType.GROUP_ISSUES;
         } else if (path.includes('/groups/') && path.includes('/merge_requests')) {
             return PageType.GROUP_MERGE_REQUESTS;
+        } else if (path.includes('/groups/') && path.includes('/-/epic_boards')) {
+            return PageType.GROUP_EPIC_BOARDS;
         } else if (path.includes('/groups/') && path.includes('/boards')) {
             return PageType.GROUP_BOARDS;
         } else if ((path.includes('/-/issues') || path.includes('/-/work_items')) && hasIid) {
@@ -146,7 +148,8 @@ export const usePageDetectionStore = defineStore(`${APP_NAMESPACE}/pageDetection
         const type = pageType.value;
         return type === PageType.GROUP_ISSUES ||
             type === PageType.GROUP_MERGE_REQUESTS ||
-            type === PageType.GROUP_BOARDS;
+            type === PageType.GROUP_BOARDS ||
+            type === PageType.GROUP_EPIC_BOARDS;
     });
 
     const isDetail = computed<boolean>(() => {
@@ -176,6 +179,10 @@ export const usePageDetectionStore = defineStore(`${APP_NAMESPACE}/pageDetection
         const type = pageType.value;
         return type === PageType.PROJECT_BOARDS ||
             type === PageType.GROUP_BOARDS;
+    });
+
+    const isEpicBoardPage = computed<boolean>(() => {
+        return pageType.value === PageType.GROUP_EPIC_BOARDS;
     });
 
     const isTodoPage = computed<boolean>(() => {
@@ -217,6 +224,7 @@ export const usePageDetectionStore = defineStore(`${APP_NAMESPACE}/pageDetection
         isIssuePage,
         isMergeRequestPage,
         isBoardPage,
+        isEpicBoardPage,
         isTodoPage,
         isGroupPage,
         isProjectPage,

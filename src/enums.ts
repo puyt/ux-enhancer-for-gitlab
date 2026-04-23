@@ -22,6 +22,8 @@ export const enum Preference {
     ISSUE_REQUIRED_SCOPED_LABELS = 'issue_required_scoped_labels',
     ISSUE_BOARDS_RENAME_PROJECT = 'issue_boards_rename_project',
 
+    EPIC_BOARDS_SHOW_ASSIGNEES = 'epic_boards_show_assignees',
+
     MR_HIGHLIGHT_MINE = 'mr_highlight_mine',
     MR_HIGHLIGHT_MY_APPROVALS = 'mr_highlight_my_approvals',
     MR_SHOW_ASSIGN_YOURSELF = 'mr_show_assign_yourself',
@@ -52,6 +54,7 @@ export const enum PageType {
     GROUP_ISSUES = 'group_issues',
     GROUP_MERGE_REQUESTS = 'group_merge_requests',
     GROUP_BOARDS = 'group_boards',
+    GROUP_EPIC_BOARDS = 'group_epic_boards',
 
     // Other pages
     UNKNOWN = 'unknown',
