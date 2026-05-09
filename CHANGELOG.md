@@ -5,6 +5,17 @@
 GitLab is gradually updating its UI as part of the "work items" overhaul. Since this extension heavily depends on the DOM, some features might not function properly with the new UI.
 I only have access to the GitLab version used at our company, so I might not catch every change. I'm working on fixing the broken features one by one, while trying to make it backwards compatible which I cannot verify.
 
+## 4.9.0 - 2026.05 (09/05/2026)
+
+### ✨ Features
+
+- **epic-board**: add assignee avatars to epic board.
+- **issue**: add time estimate required option in issue validation.
+
+### ♻️ Enhancements
+
+- **scoped-labels-dropdown**: improve scoped labels dropdown in new sidepanel drawer.
+
 ## 4.8.0 - 2026.04 (09/04/2026)
 
 ### ✨ Features
