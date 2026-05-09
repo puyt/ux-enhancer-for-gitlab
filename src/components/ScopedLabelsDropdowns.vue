@@ -64,6 +64,7 @@
         onMounted,
         type Ref,
         ref,
+        watch,
     } from 'vue';
     import { storeToRefs } from 'pinia';
     import { useExtractProjectPaths } from '../composables/useExtractProjectPaths';
@@ -173,7 +174,7 @@
         await fetchMultipleProjectLabels();
 
         setTimeout(() => {
-            if (document.querySelector('#js-right-sidebar-portal .gl-drawer-header')) {
+            if (document.querySelector('#js-right-sidebar-portal .gl-drawer-header') || document.querySelector('.work-item-drawer')) {
                 deboundedInjectTeleports();
             }
         }, 400);
@@ -221,6 +222,15 @@
     }
 
     const deboundedInjectTeleports = debounce(injectTeleports, 400);
+
+    watch(() => iid, () => {
+        Object.values(teleportElements.value).forEach((el) => {
+            el.removeEventListener('click', onClickLabelHandler);
+        });
+        teleportElements.value = {};
+        selectedScope.value = '';
+    });
+
     onMounted(async () => {
         if (!currentProjectPath) {
             setTimeout(() => {
@@ -232,9 +242,9 @@
 
         if (isBoardPage.value) {
             document.body.addEventListener('mouseup', onClickDocumentHandler);
-        } else {
-            on(MittEventKey.BROWSER_REQUEST_COMPLETED, deboundedInjectTeleports);
         }
+
+        on(MittEventKey.BROWSER_REQUEST_COMPLETED, deboundedInjectTeleports);
     });
 
     onBeforeUnmount(() => {
