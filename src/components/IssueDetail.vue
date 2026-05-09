@@ -232,6 +232,7 @@
     import {
         mdiCheckCircleOutline,
         mdiChevronDown,
+        mdiClockOutline,
         mdiCommentAccountOutline,
         mdiCommentAlertOutline,
         mdiCommentTextMultipleOutline,
@@ -339,6 +340,13 @@
                 icon: gSvgWeight,
                 isGitlabIcon: true,
                 isValid: issue.value?.weight !== null ? 1 : 0,
+            },
+            {
+                key: Preference.ISSUE_VALIDATE_MISSING_TIME_ESTIMATE,
+                label: 'Estimated time',
+                icon: mdiClockOutline,
+                isGitlabIcon: false,
+                isValid: (issue.value?.time_stats?.time_estimate ?? 0) > 0 ? 1 : 0,
             },
             {
                 key: Preference.ISSUE_VALIDATE_UNRESOLVED_THREADS,

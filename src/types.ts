@@ -92,6 +92,12 @@ export interface GitlabIssue {
     weight: number | null,
     iteration: GitlabIteration | null;
     epic: GitlabEpic | null;
+    time_stats: {
+        time_estimate: number;
+        total_time_spent: number;
+        human_time_estimate: string | null;
+        human_total_time_spent: string | null;
+    } | null;
 }
 
 export interface GitLabDiscussion {
